@@ -434,7 +434,7 @@ const OfferPrint = () => {
       <div className="header">
         <div className="header-left">
           <div className="logo-box">
-            <img src="/cropped-umzug-final.png" alt="Umzug UNIT Logo" />
+            <img src="/cropped-umzug-final.png" alt="Umzug UNIT Logo" onError={(e) => e.target.style.display = 'none'} />
           </div>
           <div className="brand-text">
             <span className="brand-yellow">Umzug UNIT</span>
