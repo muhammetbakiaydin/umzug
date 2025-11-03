@@ -225,7 +225,7 @@ const AdminDashboard = () => {
           <div className="grid md:grid-cols-3 gap-6">
             {/* New Offer Button */}
             <button
-              onClick={() => navigate('/admin/offers/new')}
+              onClick={() => navigate('/admin/offers/create')}
               className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg p-6 flex items-center justify-center gap-3 transition-colors shadow-sm hover:shadow-md"
             >
               <Plus className="h-5 w-5" />

@@ -258,7 +258,7 @@ const SettingsPage = () => {
               className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'services'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-black hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('services')}
             >
@@ -269,7 +269,7 @@ const SettingsPage = () => {
               className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'additional'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-black hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('additional')}
             >
@@ -280,7 +280,7 @@ const SettingsPage = () => {
               className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'vat'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-black hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('vat')}
             >
@@ -307,10 +307,10 @@ const SettingsPage = () => {
             {/* Add Category Form */}
             {showAddCategory && (
               <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <h3 className="font-medium text-slate-900 mb-4">Neue Kategorie hinzufügen</h3>
+                <h3 className="font-medium text-black mb-4">Neue Kategorie hinzufügen</h3>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-slate-700">Name</Label>
+                    <Label className="text-black">Name</Label>
                     <Input
                       value={newCategory.name}
                       onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
@@ -319,7 +319,7 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-700">Wert (für System)</Label>
+                    <Label className="text-black">Wert (für System)</Label>
                     <Input
                       value={newCategory.value}
                       onChange={(e) => setNewCategory({ ...newCategory, value: e.target.value })}
@@ -365,10 +365,10 @@ const SettingsPage = () => {
                   {/* Category Header */}
                   <div className="flex items-center justify-between p-4">
                     <div className="flex-1">
-                      <div className="font-medium text-slate-900">{category.name}</div>
-                      <div className="text-sm text-slate-600">Wert: {category.value}</div>
+                      <div className="font-medium text-black">{category.name}</div>
+                      <div className="text-sm text-black">Wert: {category.value}</div>
                       {category.description && (
-                        <div className="text-xs text-slate-500 mt-1">{category.description}</div>
+                        <div className="text-xs text-black mt-1">{category.description}</div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -412,12 +412,12 @@ const SettingsPage = () => {
                   {/* Expandable Edit Form */}
                   {editingCategory?.id === category.id && (
                     <div className="border-t border-slate-200 p-6 bg-white">
-                      <h3 className="font-semibold text-slate-900 mb-4">Kategorie bearbeiten</h3>
+                      <h3 className="font-semibold text-black mb-4">Kategorie bearbeiten</h3>
                       
                       <div className="space-y-4">
                         {/* Category Name */}
                         <div>
-                          <Label className="text-slate-700 font-medium">Kategorie-Name *</Label>
+                          <Label className="text-black font-medium">Kategorie-Name *</Label>
                           <Input
                             value={editingCategory.name}
                             onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
@@ -428,7 +428,7 @@ const SettingsPage = () => {
 
                         {/* Description */}
                         <div>
-                          <Label className="text-slate-700 font-medium">Beschreibung (Deutsch)</Label>
+                          <Label className="text-black font-medium">Beschreibung (Deutsch)</Label>
                           <Input
                             value={editingCategory.description || ''}
                             onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
@@ -439,7 +439,7 @@ const SettingsPage = () => {
 
                         {/* Pricing Model */}
                         <div>
-                          <Label className="text-slate-700 font-medium">Preismodell</Label>
+                          <Label className="text-black font-medium">Preismodell</Label>
                           <select
                             value={editingCategory.pricing_model || 'custom'}
                             onChange={(e) => setEditingCategory({ ...editingCategory, pricing_model: e.target.value })}
@@ -454,7 +454,7 @@ const SettingsPage = () => {
                         <div className="grid md:grid-cols-2 gap-4">
                           {/* Hourly Rate */}
                           <div>
-                            <Label className="text-slate-700 font-medium">Stundensatz (CHF)</Label>
+                            <Label className="text-black font-medium">Stundensatz (CHF)</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -467,7 +467,7 @@ const SettingsPage = () => {
 
                           {/* Base Price */}
                           <div>
-                            <Label className="text-slate-700 font-medium">Basispreis (CHF)</Label>
+                            <Label className="text-black font-medium">Basispreis (CHF)</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -482,8 +482,8 @@ const SettingsPage = () => {
                         {/* Active Toggle */}
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
                           <div>
-                            <Label className="text-slate-700 font-medium">Aktiv</Label>
-                            <p className="text-xs text-slate-600 mt-0.5">Kategorie für neue Angebote verfügbar machen</p>
+                            <Label className="text-black font-medium">Aktiv</Label>
+                            <p className="text-xs text-black mt-0.5">Kategorie für neue Angebote verfügbar machen</p>
                           </div>
                           <Switch
                             checked={editingCategory.active}
@@ -503,7 +503,7 @@ const SettingsPage = () => {
                           <Button
                             onClick={() => setEditingCategory(null)}
                             variant="outline"
-                            className="border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                            className="border-slate-300 bg-white text-black hover:bg-slate-100"
                           >
                             <X className="mr-2 h-4 w-4" />
                             Abbrechen
@@ -535,10 +535,10 @@ const SettingsPage = () => {
             {/* Add Service Form */}
             {showAddService && (
               <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <h3 className="font-medium text-slate-900 mb-4">Neue Zusatzleistung hinzufügen</h3>
+                <h3 className="font-medium text-black mb-4">Neue Zusatzleistung hinzufügen</h3>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-slate-700">Name</Label>
+                    <Label className="text-black">Name</Label>
                     <Input
                       value={newService.name}
                       onChange={(e) => setNewService({ ...newService, name: e.target.value })}
@@ -547,7 +547,7 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div>
-                    <Label className="text-slate-700">Preis (CHF)</Label>
+                    <Label className="text-black">Preis (CHF)</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -558,7 +558,7 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <Label className="text-slate-700">Beschreibung (optional)</Label>
+                    <Label className="text-black">Beschreibung (optional)</Label>
                     <Input
                       value={newService.description}
                       onChange={(e) => setNewService({ ...newService, description: e.target.value })}
@@ -594,13 +594,13 @@ const SettingsPage = () => {
                   <div className="flex items-center justify-between p-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
-                        <div className="font-medium text-slate-900">{service.name}</div>
+                        <div className="font-medium text-black">{service.name}</div>
                         <div className="text-sm font-semibold text-brand-primary">
                           CHF {service.price ? Number(service.price).toFixed(2) : '0.00'}
                         </div>
                       </div>
                       {service.description && (
-                        <div className="text-sm text-slate-600">{service.description}</div>
+                        <div className="text-sm text-black">{service.description}</div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
@@ -631,11 +631,11 @@ const SettingsPage = () => {
                   {/* Expandable Edit Form */}
                   {editingService?.id === service.id && (
                     <div className="border-t border-slate-200 p-4 bg-white">
-                      <h4 className="font-medium text-slate-900 mb-4">Zusatzleistung bearbeiten</h4>
+                      <h4 className="font-medium text-black mb-4">Zusatzleistung bearbeiten</h4>
                       <div className="space-y-4">
                         <div className="grid md:grid-cols-2 gap-4">
                           <div>
-                            <Label className="text-slate-700 text-sm font-medium">Leistungsname *</Label>
+                            <Label className="text-black text-sm font-medium">Leistungsname *</Label>
                             <Input
                               value={editingService.name}
                               onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
@@ -645,7 +645,7 @@ const SettingsPage = () => {
                           </div>
                           
                           <div>
-                            <Label className="text-slate-700 text-sm font-medium">Preis (CHF) *</Label>
+                            <Label className="text-black text-sm font-medium">Preis (CHF) *</Label>
                             <Input
                               type="number"
                               step="0.01"
@@ -658,7 +658,7 @@ const SettingsPage = () => {
                         </div>
                         
                         <div>
-                          <Label className="text-slate-700 text-sm font-medium">Beschreibung (optional)</Label>
+                          <Label className="text-black text-sm font-medium">Beschreibung (optional)</Label>
                           <textarea
                             value={editingService.description || ''}
                             onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
@@ -670,8 +670,8 @@ const SettingsPage = () => {
 
                         <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
                           <div>
-                            <Label className="text-slate-900 font-medium">Status</Label>
-                            <p className="text-sm text-slate-600">
+                            <Label className="text-black font-medium">Status</Label>
+                            <p className="text-sm text-black">
                               Leistung für Angebote {editingService.active ? 'verfügbar' : 'nicht verfügbar'}
                             </p>
                           </div>
@@ -714,7 +714,7 @@ const SettingsPage = () => {
             
             <div className="max-w-md">
               <div className="mb-4">
-                <Label className="text-slate-700">MwSt. Satz (%)</Label>
+                <Label className="text-black">MwSt. Satz (%)</Label>
                 {editingVat ? (
                   <div className="flex gap-2 mt-2">
                     <Input
@@ -742,8 +742,8 @@ const SettingsPage = () => {
                 ) : (
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 mt-2">
                     <div>
-                      <div className="text-2xl font-bold text-slate-900">{companySettings.vat_rate}%</div>
-                      <div className="text-sm text-slate-600">Aktueller MwSt. Satz</div>
+                      <div className="text-2xl font-bold text-black">{companySettings.vat_rate}%</div>
+                      <div className="text-sm text-black">Aktueller MwSt. Satz</div>
                     </div>
                     <Button
                       onClick={() => setEditingVat(true)}
