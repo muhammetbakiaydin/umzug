@@ -1,22 +1,20 @@
 import { useAuth } from '@/context/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Package, Users, Settings, FileText } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { FileText, Users, Settings, Calendar, TrendingUp, User2, Plus } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 
 const AdminDashboard = () => {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
-  const { t } = useTranslation()
   
   const [stats, setStats] = useState({
     totalOffers: 0,
-    acceptedOffers: 0,
-    totalCustomers: 0,
-    monthlyRevenue: 0,
+    thisMonthOffers: 0,
+    totalRevenue: 0,
+    activeOffers: 0,
+    recentOffers: [],
     loading: true
   })
 
@@ -31,32 +29,40 @@ const AdminDashboard = () => {
         .from('offers')
         .select('*', { count: 'exact', head: true })
 
-      // Get accepted offers
-      const { count: acceptedOffers } = await supabase
-        .from('offers')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'accepted')
-
-      // Get total customers
-      const { count: totalCustomers } = await supabase
-        .from('customers')
-        .select('*', { count: 'exact', head: true })
-
-      // Get monthly revenue (current month)
+      // Get this month's offers
       const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString()
-      const { data: monthlyOffers } = await supabase
+      const { count: thisMonthOffers } = await supabase
         .from('offers')
-        .select('total')
-        .eq('status', 'accepted')
+        .select('*', { count: 'exact', head: true })
         .gte('created_at', startOfMonth)
 
-      const monthlyRevenue = monthlyOffers?.reduce((sum, offer) => sum + (offer.total || 0), 0) || 0
+      // Get total revenue
+      const { data: allOffers } = await supabase
+        .from('offers')
+        .select('flat_rate_price')
+        .eq('status', 'accepted')
+
+      const totalRevenue = allOffers?.reduce((sum, offer) => sum + (offer.flat_rate_price || 0), 0) || 0
+
+      // Get active offers (in processing)
+      const { count: activeOffers } = await supabase
+        .from('offers')
+        .select('*', { count: 'exact', head: true })
+        .in('status', ['draft', 'sent'])
+
+      // Get recent offers
+      const { data: recentOffers } = await supabase
+        .from('offers')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5)
 
       setStats({
         totalOffers: totalOffers || 0,
-        acceptedOffers: acceptedOffers || 0,
-        totalCustomers: totalCustomers || 0,
-        monthlyRevenue,
+        thisMonthOffers: thisMonthOffers || 0,
+        totalRevenue,
+        activeOffers: activeOffers || 0,
+        recentOffers: recentOffers || [],
         loading: false
       })
     } catch (error) {
@@ -67,9 +73,11 @@ const AdminDashboard = () => {
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('de-CH', {
+      style: 'currency',
+      currency: 'CHF',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(value).replace(/,/g, "'")
+    }).format(value)
   }
 
   const handleLogout = async () => {
@@ -77,37 +85,16 @@ const AdminDashboard = () => {
     navigate('/admin/login')
   }
 
-  const menuItems = [
-    {
-      title: t('nav.offers'),
-      icon: FileText,
-      path: '/admin/offers',
-      description: 'View and manage all offers',
-    },
-    {
-      title: t('nav.customers'),
-      icon: Users,
-      path: '/admin/customers',
-      description: 'Manage customer information',
-    },
-    {
-      title: t('nav.settings'),
-      icon: Settings,
-      path: '/admin/settings',
-      description: 'Configure system settings',
-    },
-  ]
-
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-slate-50">
       {/* Header */}
       <header className="bg-white border-b border-slate-200 py-4 shadow-sm">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-brand-secondary">Umzug UNIT GmbH </h1>
+          <h1 className="text-2xl font-bold text-brand-secondary">Umzug UNIT GmbH</h1>
           <div className="flex gap-4 items-center">
             <span className="text-sm text-slate-600">{user?.email}</span>
             <Button variant="outline" onClick={handleLogout} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
-              {t('nav.logout')}
+              Abmelden
             </Button>
           </div>
         </div>
@@ -115,72 +102,166 @@ const AdminDashboard = () => {
 
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-6">
-          {menuItems.map((item) => (
-            <Card
-              key={item.path}
-              className="hover:shadow-lg transition-shadow cursor-pointer bg-white border-slate-200"
-              onClick={() => navigate(item.path)}
-            >
-              <CardHeader>
-                <item.icon className="w-12 h-12 text-brand-primary mb-4" />
-                <CardTitle className="text-brand-secondary">{item.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-slate-600">{item.description}</p>
-              </CardContent>
-            </Card>
-          ))}
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-brand-secondary mb-2">Willkommen, Administrator!</h2>
+          <p className="text-slate-600">Hier ist eine Übersicht über Ihre Umzugs-Offerten</p>
         </div>
 
-        {/* Quick Stats */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-bold mb-6 text-brand-secondary">Quick Statistics</h2>
-          <div className="grid md:grid-cols-4 gap-6">
-            <Card className="bg-white border-slate-200">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Package className="w-8 h-8 text-brand-primary mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-brand-secondary">
-                    {stats.loading ? '...' : stats.totalOffers}
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          {/* Total Offers */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-slate-600">Gesamte Offerten</h3>
+              <FileText className="h-5 w-5 text-yellow-500" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.loading ? '...' : stats.totalOffers}
+            </div>
+            <p className="text-xs text-slate-500">Alle erstellten Offerten</p>
+          </div>
+
+          {/* This Month */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-slate-600">Diesen Monat</h3>
+              <Calendar className="h-5 w-5 text-blue-500" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.loading ? '...' : stats.thisMonthOffers}
+            </div>
+            <p className="text-xs text-slate-500">Offerten in diesem Monat</p>
+          </div>
+
+          {/* Total Revenue */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-slate-600">Gesamtumsatz</h3>
+              <TrendingUp className="h-5 w-5 text-green-500" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.loading ? '...' : formatCurrency(stats.totalRevenue).replace('CHF', 'CHF')}
+            </div>
+            <p className="text-xs text-slate-500">Geschätzter Gesamtumsatz</p>
+          </div>
+
+          {/* Active Offers */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6 hover:shadow-md transition-shadow">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-medium text-slate-600">Aktive Offerten</h3>
+              <User2 className="h-5 w-5 text-purple-500" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900 mb-1">
+              {stats.loading ? '...' : stats.activeOffers}
+            </div>
+            <p className="text-xs text-slate-500">Offerten in Bearbeitung</p>
+          </div>
+        </div>
+
+        {/* Recent Offers Section */}
+        <div className="bg-white rounded-lg border border-slate-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-semibold text-slate-900">Neueste Offerten</h3>
+            <Button
+              onClick={() => navigate('/admin/offers')}
+              variant="ghost"
+              className="text-brand-primary hover:bg-brand-primary/10"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              Alle anzeigen
+            </Button>
+          </div>
+          
+          {stats.loading ? (
+            <div className="text-center py-12 text-slate-500">Lädt...</div>
+          ) : stats.recentOffers.length === 0 ? (
+            <div className="text-center py-12">
+              <FileText className="mx-auto h-16 w-16 text-slate-300 mb-4" />
+              <p className="text-slate-500 mb-4">Noch keine Offerten erstellt</p>
+              <Button
+                onClick={() => navigate('/admin/offers/new')}
+                className="bg-brand-primary hover:bg-brand-primary/90"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Erste Offerte erstellen
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {stats.recentOffers.map((offer) => (
+                <div
+                  key={offer.id}
+                  onClick={() => navigate(`/admin/offers/${offer.id}`)}
+                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
+                >
+                  <div className="flex-1">
+                    <div className="font-medium text-slate-900">{offer.offer_number}</div>
+                    <div className="text-sm text-slate-600">
+                      {offer.from_first_name} {offer.from_last_name}
+                    </div>
                   </div>
-                  <div className="text-sm text-slate-600">Total Offers</div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-200">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <FileText className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-brand-secondary">
-                    {stats.loading ? '...' : stats.acceptedOffers}
+                  <div className="text-right mr-4">
+                    <div className="text-sm font-semibold text-slate-900">
+                      {formatCurrency(offer.flat_rate_price || 0)}
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      {new Date(offer.created_at).toLocaleDateString('de-CH')}
+                    </div>
                   </div>
-                  <div className="text-sm text-slate-600">Accepted</div>
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-medium ${
+                      offer.status === 'accepted'
+                        ? 'bg-green-100 text-green-700'
+                        : offer.status === 'sent'
+                        ? 'bg-blue-100 text-blue-700'
+                        : offer.status === 'rejected'
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
+                    {offer.status === 'draft' && 'Entwurf'}
+                    {offer.status === 'sent' && 'Gesendet'}
+                    {offer.status === 'accepted' && 'Akzeptiert'}
+                    {offer.status === 'rejected' && 'Abgelehnt'}
+                    {offer.status === 'completed' && 'Abgeschlossen'}
+                  </span>
                 </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-200">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <Users className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-brand-secondary">
-                    {stats.loading ? '...' : stats.totalCustomers}
-                  </div>
-                  <div className="text-sm text-slate-600">Customers</div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-white border-slate-200">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <span className="text-2xl font-bold text-brand-primary">CHF</span>
-                  <div className="text-3xl font-bold text-brand-secondary">
-                    {stats.loading ? '...' : formatCurrency(stats.monthlyRevenue)}
-                  </div>
-                  <div className="text-sm text-slate-600">Monthly Revenue</div>
-                </div>
-              </CardContent>
-            </Card>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick Actions */}
+        <div>
+          <h3 className="text-xl font-semibold text-slate-900 mb-4">Schnellaktionen</h3>
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* New Offer Button */}
+            <button
+              onClick={() => navigate('/admin/offers/new')}
+              className="bg-brand-primary hover:bg-brand-primary/90 text-white rounded-lg p-6 flex items-center justify-center gap-3 transition-colors shadow-sm hover:shadow-md"
+            >
+              <Plus className="h-5 w-5" />
+              <span className="font-semibold">Neue Offerte</span>
+            </button>
+
+            {/* All Offers Button */}
+            <button
+              onClick={() => navigate('/admin/offers')}
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg p-6 flex items-center justify-center gap-3 transition-colors shadow-sm hover:shadow-md"
+            >
+              <FileText className="h-5 w-5" />
+              <span className="font-semibold">Alle Offerten</span>
+            </button>
+
+            {/* Settings Button */}
+            <button
+              onClick={() => navigate('/admin/settings')}
+              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-lg p-6 flex items-center justify-center gap-3 transition-colors shadow-sm hover:shadow-md"
+            >
+              <Settings className="h-5 w-5" />
+              <span className="font-semibold">Einstellungen</span>
+            </button>
           </div>
         </div>
       </div>
