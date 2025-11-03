@@ -202,27 +202,9 @@ const CustomersPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-6 sticky top-0 z-50 shadow-sm">
+      {/* Page Header */}
+      <div className="bg-white border-b border-slate-200 py-6">
         <div className="container mx-auto px-6">
-          <div className="flex justify-between items-start mb-6">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                onClick={() => navigate('/admin/dashboard')}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Zurück
-              </Button>
-            </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => signOut()} className="bg-white text-brand-secondary border-slate-300 hover:bg-slate-50">
-                Logout
-              </Button>
-            </div>
-          </div>
-          
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-slate-900">Kunden</h1>
@@ -239,7 +221,7 @@ const CustomersPage = () => {
             </Button>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Content */}
       <div className="container mx-auto px-6 py-8">

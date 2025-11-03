@@ -250,23 +250,6 @@ const SettingsPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-4 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="text-slate-700 hover:text-brand-secondary hover:bg-slate-100"
-              onClick={() => navigate('/admin/dashboard')}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Zurück
-            </Button>
-            <h1 className="text-2xl font-bold text-brand-secondary">Einstellungen</h1>
-          </div>
-        </div>
-      </header>
-
       {/* Tabs */}
       <div className="container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg border border-slate-200 mb-6">

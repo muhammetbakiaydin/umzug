@@ -294,25 +294,15 @@ const CreateOffer = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-4 sticky top-0 z-50 shadow-sm">
+      {/* Page Header */}
+      <div className="bg-white border-b border-slate-200 py-4">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              className="text-slate-700 hover:text-brand-secondary hover:bg-slate-100"
-              onClick={() => navigate('/admin/offers')}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Zurück
-            </Button>
-            <h1 className="text-2xl font-bold text-brand-secondary">Neues Angebot erstellen</h1>
-          </div>
+          <h1 className="text-2xl font-bold text-brand-secondary">Neues Angebot erstellen</h1>
           <div className="text-slate-600 text-sm">
             Erstellt von: <span className="font-semibold text-brand-secondary">{user?.email || 'Admin'}</span>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Form */}
       <div className="container mx-auto px-4 py-8 max-w-5xl">

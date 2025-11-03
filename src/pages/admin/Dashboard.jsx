@@ -87,19 +87,6 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-4 shadow-sm">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-brand-secondary">Umzug UNIT GmbH</h1>
-          <div className="flex gap-4 items-center">
-            <span className="text-sm text-slate-600">{user?.email}</span>
-            <Button variant="outline" onClick={handleLogout} className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50">
-              Abmelden
-            </Button>
-          </div>
-        </div>
-      </header>
-
       {/* Content */}
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}

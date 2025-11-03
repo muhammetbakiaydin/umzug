@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import AdminLayout from './components/AdminLayout'
 import './lib/i18n'
 import { Toaster } from 'sonner'
 
@@ -37,7 +38,9 @@ function App() {
               path="/admin/dashboard"
               element={
                 <ProtectedRoute>
-                  <AdminDashboard />
+                  <AdminLayout>
+                    <AdminDashboard />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />
@@ -45,7 +48,9 @@ function App() {
               path="/admin/offers"
               element={
                 <ProtectedRoute>
-                  <OffersPage />
+                  <AdminLayout>
+                    <OffersPage />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />
@@ -53,7 +58,9 @@ function App() {
               path="/admin/offers/create"
               element={
                 <ProtectedRoute>
-                  <CreateOffer />
+                  <AdminLayout>
+                    <CreateOffer />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />
@@ -61,7 +68,9 @@ function App() {
               path="/admin/offers/:id"
               element={
                 <ProtectedRoute>
-                  <OfferDetail />
+                  <AdminLayout>
+                    <OfferDetail />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />
@@ -77,7 +86,9 @@ function App() {
               path="/admin/customers"
               element={
                 <ProtectedRoute>
-                  <CustomersPage />
+                  <AdminLayout>
+                    <CustomersPage />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />
@@ -85,7 +96,9 @@ function App() {
               path="/admin/settings"
               element={
                 <ProtectedRoute>
-                  <SettingsPage />
+                  <AdminLayout>
+                    <SettingsPage />
+                  </AdminLayout>
                 </ProtectedRoute>
               }
             />

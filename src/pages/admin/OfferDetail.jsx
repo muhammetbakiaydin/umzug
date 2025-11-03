@@ -216,19 +216,13 @@ const OfferDetail = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 py-6 sticky top-0 z-50 shadow-sm">
+      {/* Page Header */}
+      <div className="bg-white border-b border-slate-200 py-6">
         <div className="container mx-auto px-6">
           <div className="flex justify-between items-start mb-4">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                className="text-slate-600 hover:text-slate-900 hover:bg-slate-100"
-                onClick={() => navigate('/admin/offers')}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Zurück
-              </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">Angebot {offer.offer_number}</h1>
+              <p className="text-slate-600 mt-1">Erstellt von: {offer.created_by_name || 'N/A'}</p>
             </div>
             <div className="flex gap-2">
               {!editMode ? (
@@ -272,13 +266,8 @@ const OfferDetail = () => {
               )}
             </div>
           </div>
-          
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900">Angebot {offer.offer_number}</h1>
-            <p className="text-slate-600 mt-1">Erstellt von: {offer.created_by_name || 'N/A'}</p>
-          </div>
         </div>
-      </header>
+      </div>
 
       {/* Content */}
       <div className="container mx-auto px-6 py-8 max-w-5xl">
