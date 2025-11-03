@@ -32,7 +32,6 @@ const SettingsPage = () => {
   // Service Categories
   const [serviceCategories, setServiceCategories] = useState([])
   const [editingCategory, setEditingCategory] = useState(null)
-  const [showEditModal, setShowEditModal] = useState(false)
   const [newCategory, setNewCategory] = useState({ 
     name: '', 
     value: '', 
@@ -129,7 +128,6 @@ const SettingsPage = () => {
       hourly_rate: category.hourly_rate || 120,
       base_price: category.base_price || 0
     })
-    setShowEditModal(true)
   }
 
   const handleSaveCategoryEdit = async () => {
@@ -153,7 +151,6 @@ const SettingsPage = () => {
     } else {
       toast.success('Kategorie erfolgreich aktualisiert')
       loadSettings()
-      setShowEditModal(false)
       setEditingCategory(null)
     }
   }
@@ -363,45 +360,158 @@ const SettingsPage = () => {
               {serviceCategories.map((category) => (
                 <div
                   key={category.id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                  className="bg-slate-50 rounded-lg border border-slate-200 overflow-hidden"
                 >
-                  <div className="flex-1">
-                    <div className="font-medium text-slate-900">{category.name}</div>
-                    <div className="text-sm text-slate-600">Wert: {category.value}</div>
-                    {category.description && (
-                      <div className="text-xs text-slate-500 mt-1">{category.description}</div>
-                    )}
+                  {/* Category Header */}
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">{category.name}</div>
+                      <div className="text-sm text-slate-600">Wert: {category.value}</div>
+                      {category.description && (
+                        <div className="text-xs text-slate-500 mt-1">{category.description}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          category.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {category.active ? 'Aktiv' : 'Inaktiv'}
+                      </span>
+                      <Button
+                        onClick={() => {
+                          if (editingCategory?.id === category.id) {
+                            setEditingCategory(null)
+                          } else {
+                            openEditModal(category)
+                          }
+                        }}
+                        size="sm"
+                        className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleUpdateCategory(category.id, { active: !category.active })}
+                        size="sm"
+                        className={`bg-white border border-slate-200 ${category.active ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
+                      >
+                        {category.active ? 'Deaktivieren' : 'Aktivieren'}
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteCategory(category.id)}
+                        size="sm"
+                        className="bg-white border border-slate-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        category.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {category.active ? 'Aktiv' : 'Inaktiv'}
-                    </span>
-                    <Button
-                      onClick={() => openEditModal(category)}
-                      size="sm"
-                      className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      onClick={() => handleUpdateCategory(category.id, { active: !category.active })}
-                      size="sm"
-                      className={`bg-white border border-slate-200 ${category.active ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
-                    >
-                      {category.active ? 'Deaktivieren' : 'Aktivieren'}
-                    </Button>
-                    <Button
-                      onClick={() => handleDeleteCategory(category.id)}
-                      size="sm"
-                      className="bg-white border border-slate-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+
+                  {/* Expandable Edit Form */}
+                  {editingCategory?.id === category.id && (
+                    <div className="border-t border-slate-200 p-6 bg-white">
+                      <h3 className="font-semibold text-slate-900 mb-4">Kategorie bearbeiten</h3>
+                      
+                      <div className="space-y-4">
+                        {/* Category Name */}
+                        <div>
+                          <Label className="text-slate-700 font-medium">Kategorie-Name *</Label>
+                          <Input
+                            value={editingCategory.name}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                            placeholder="z.B. Umzug"
+                            className="bg-white border-slate-300 mt-1"
+                          />
+                        </div>
+
+                        {/* Description */}
+                        <div>
+                          <Label className="text-slate-700 font-medium">Beschreibung (Deutsch)</Label>
+                          <Input
+                            value={editingCategory.description || ''}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                            placeholder="z.B. Professioneller Umzugsservice"
+                            className="bg-white border-slate-300 mt-1"
+                          />
+                        </div>
+
+                        {/* Pricing Model */}
+                        <div>
+                          <Label className="text-slate-700 font-medium">Preismodell</Label>
+                          <select
+                            value={editingCategory.pricing_model || 'custom'}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, pricing_model: e.target.value })}
+                            className="w-full h-10 rounded-md border border-slate-300 bg-white text-slate-900 px-3 py-2 mt-1"
+                          >
+                            <option value="hourly">Stündlich</option>
+                            <option value="fixed">Festpreis</option>
+                            <option value="custom">Custom</option>
+                          </select>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 gap-4">
+                          {/* Hourly Rate */}
+                          <div>
+                            <Label className="text-slate-700 font-medium">Stundensatz (CHF)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editingCategory.hourly_rate || 0}
+                              onChange={(e) => setEditingCategory({ ...editingCategory, hourly_rate: e.target.value })}
+                              placeholder="120"
+                              className="bg-white border-slate-300 mt-1"
+                            />
+                          </div>
+
+                          {/* Base Price */}
+                          <div>
+                            <Label className="text-slate-700 font-medium">Basispreis (CHF)</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editingCategory.base_price || 0}
+                              onChange={(e) => setEditingCategory({ ...editingCategory, base_price: e.target.value })}
+                              placeholder="0"
+                              className="bg-white border-slate-300 mt-1"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Active Toggle */}
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                          <div>
+                            <Label className="text-slate-700 font-medium">Aktiv</Label>
+                            <p className="text-xs text-slate-600 mt-0.5">Kategorie für neue Angebote verfügbar machen</p>
+                          </div>
+                          <Switch
+                            checked={editingCategory.active}
+                            onCheckedChange={(checked) => setEditingCategory({ ...editingCategory, active: checked })}
+                          />
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 pt-2">
+                          <Button
+                            onClick={handleSaveCategoryEdit}
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
+                          >
+                            <Save className="mr-2 h-4 w-4" />
+                            Änderungen speichern
+                          </Button>
+                          <Button
+                            onClick={() => setEditingCategory(null)}
+                            variant="outline"
+                            className="border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Abbrechen
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -602,137 +712,6 @@ const SettingsPage = () => {
           </div>
         )}
       </div>
-
-      {/* Edit Category Modal */}
-      {showEditModal && editingCategory && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-            <div className="border-b border-slate-200 p-6">
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-slate-900">Kategorie bearbeiten</h2>
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditingCategory(null)
-                  }}
-                  className="text-slate-400 hover:text-slate-600"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-            
-            <div className="p-6 space-y-6">
-              {/* Category Name */}
-              <div>
-                <Label className="text-slate-700 font-medium">Kategorie-Name *</Label>
-                <Input
-                  value={editingCategory.name}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                  placeholder="z.B. Umzug"
-                  className="bg-white border-slate-300 mt-2"
-                />
-              </div>
-
-              {/* Description */}
-              <div>
-                <Label className="text-slate-700 font-medium">Beschreibung (Deutsch)</Label>
-                <Input
-                  value={editingCategory.description || ''}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
-                  placeholder="z.B. Professioneller Umzugsservice"
-                  className="bg-white border-slate-300 mt-2"
-                />
-              </div>
-
-              {/* Pricing Model */}
-              <div>
-                <Label className="text-slate-700 font-medium">Preismodell</Label>
-                <select
-                  value={editingCategory.pricing_model || 'custom'}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, pricing_model: e.target.value })}
-                  className="w-full h-10 rounded-md border border-slate-300 bg-white text-slate-900 px-3 py-2 mt-2"
-                >
-                  <option value="hourly">Stündlich</option>
-                  <option value="fixed">Festpreis</option>
-                  <option value="custom">Custom</option>
-                </select>
-              </div>
-
-              {/* Hourly Rate */}
-              <div>
-                <Label className="text-slate-700 font-medium">Stundensatz (CHF)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={editingCategory.hourly_rate || 0}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, hourly_rate: e.target.value })}
-                  placeholder="120"
-                  className="bg-white border-slate-300 mt-2"
-                />
-              </div>
-
-              {/* Base Price */}
-              <div>
-                <Label className="text-slate-700 font-medium">Basispreis (CHF)</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={editingCategory.base_price || 0}
-                  onChange={(e) => setEditingCategory({ ...editingCategory, base_price: e.target.value })}
-                  placeholder="0"
-                  className="bg-white border-slate-300 mt-2"
-                />
-              </div>
-
-              {/* Active Toggle */}
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div>
-                  <Label className="text-slate-700 font-medium">Aktiv</Label>
-                  <p className="text-sm text-slate-600 mt-1">Kategorie für neue Angebote verfügbar machen</p>
-                </div>
-                <Switch
-                  checked={editingCategory.active}
-                  onCheckedChange={(checked) => setEditingCategory({ ...editingCategory, active: checked })}
-                />
-              </div>
-
-              {/* System Value (Read-only) */}
-              <div>
-                <Label className="text-slate-700 font-medium">Systemwert (nicht änderbar)</Label>
-                <Input
-                  value={editingCategory.value}
-                  disabled
-                  className="bg-slate-100 border-slate-300 text-slate-500 mt-2"
-                />
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-4 pt-4">
-                <Button
-                  onClick={handleSaveCategoryEdit}
-                  className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold"
-                >
-                  <Save className="mr-2 h-5 w-5" />
-                  Änderungen speichern
-                </Button>
-                <Button
-                  onClick={() => {
-                    setShowEditModal(false)
-                    setEditingCategory(null)
-                  }}
-                  variant="outline"
-                  className="border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
-                >
-                  <X className="mr-2 h-5 w-5" />
-                  Abbrechen
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
