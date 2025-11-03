@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { getOffer, updateOffer, getServiceCategories } from '@/lib/supabase'
+import { getOffer, updateOffer, getServiceCategories, getAllAdditionalServices } from '@/lib/supabase'
 import { ArrowLeft, Save, FileDown, Edit, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -17,16 +17,23 @@ const OfferDetail = () => {
   const [editMode, setEditMode] = useState(false)
   const [offer, setOffer] = useState(null)
   const [services, setServices] = useState([])
+  const [additionalServices, setAdditionalServices] = useState([])
   const [formData, setFormData] = useState({})
 
   useEffect(() => {
     loadOffer()
     loadServices()
+    loadAdditionalServices()
   }, [id])
 
   const loadServices = async () => {
     const { data: cats } = await getServiceCategories()
     if (cats) setServices(cats)
+  }
+
+  const loadAdditionalServices = async () => {
+    const { data: addServices } = await getAllAdditionalServices()
+    if (addServices) setAdditionalServices(addServices.filter(s => s.active))
   }
 
   const loadOffer = async () => {
@@ -342,23 +349,65 @@ const OfferDetail = () => {
                 <div>
                   <Label className="text-slate-700">Service-Kategorie</Label>
                   {editMode ? (
-                    <select
-                      className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                      value={formData.serviceCategory}
-                      onChange={(e) => handleChange('serviceCategory', e.target.value)}
-                    >
-                      {services.map(service => (
-                        <option key={service.category_id} value={service.category_id}>
-                          {service.name_de}
-                        </option>
-                      ))}
-                    </select>
+                    <>
+                      <select
+                        className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                        value={formData.serviceCategory}
+                        onChange={(e) => handleChange('serviceCategory', e.target.value)}
+                      >
+                        {services.map(service => (
+                          <option key={service.id} value={service.value}>
+                            {service.name}
+                            {service.pricing_model === 'hourly' && service.hourly_rate 
+                              ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
+                              : service.pricing_model === 'fixed' && service.base_price
+                              ? ` - CHF ${Number(service.base_price).toFixed(2)}`
+                              : ''}
+                          </option>
+                        ))}
+                      </select>
+                      {(() => {
+                        const selectedService = services.find(s => s.value === formData.serviceCategory)
+                        if (selectedService && selectedService.description) {
+                          return (
+                            <p className="text-xs text-slate-600 mt-1.5">{selectedService.description}</p>
+                          )
+                        }
+                        return null
+                      })()}
+                    </>
                   ) : (
-                    <Input
-                      className="bg-slate-50 border-slate-200 text-slate-600"
-                      value={offer.category}
-                      readOnly
-                    />
+                    <>
+                      <Input
+                        className="bg-slate-50 border-slate-200 text-slate-600"
+                        value={offer.category}
+                        readOnly
+                      />
+                      {(() => {
+                        const selectedService = services.find(s => s.value === offer.category)
+                        if (selectedService) {
+                          let priceInfo = ''
+                          if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
+                            priceInfo = `CHF ${Number(selectedService.hourly_rate).toFixed(2)}/Std`
+                          } else if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
+                            priceInfo = `CHF ${Number(selectedService.base_price).toFixed(2)}`
+                          }
+                          if (priceInfo || selectedService.description) {
+                            return (
+                              <div className="mt-1.5 space-y-1">
+                                {priceInfo && (
+                                  <p className="text-xs font-semibold text-brand-primary">{priceInfo}</p>
+                                )}
+                                {selectedService.description && (
+                                  <p className="text-xs text-slate-600">{selectedService.description}</p>
+                                )}
+                              </div>
+                            )
+                          }
+                        }
+                        return null
+                      })()}
+                    </>
                   )}
                 </div>
                 <div>
@@ -845,47 +894,36 @@ const OfferDetail = () => {
               <h2 className="text-base font-semibold text-slate-900">Zusatzleistungen</h2>
             </div>
             <div className="px-6 py-5 space-y-5">
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
-                <Label className="text-slate-700">Reinigung</Label>
-                {editMode ? (
-                  <input
-                    type="checkbox"
-                    checked={formData.extraCleaning}
-                    onChange={(e) => handleChange('extraCleaning', e.target.checked)}
-                    className="w-5 h-5 rounded border-slate-300 text-brand-primary"
-                  />
-                ) : (
-                  <span className="text-slate-700">{offer.extra_cleaning ? 'Ja' : 'Nein'}</span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
-                <Label className="text-slate-700">Entsorgung</Label>
-                {editMode ? (
-                  <input
-                    type="checkbox"
-                    checked={formData.extraDisposal}
-                    onChange={(e) => handleChange('extraDisposal', e.target.checked)}
-                    className="w-5 h-5 rounded border-slate-300 text-brand-primary"
-                  />
-                ) : (
-                  <span className="text-slate-700">{offer.extra_disposal ? 'Ja' : 'Nein'}</span>
-                )}
-              </div>
-
-              <div className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
-                <Label className="text-slate-700">Verpackungsservice</Label>
-                {editMode ? (
-                  <input
-                    type="checkbox"
-                    checked={formData.extraPacking}
-                    onChange={(e) => handleChange('extraPacking', e.target.checked)}
-                    className="w-5 h-5 rounded border-slate-300 text-brand-primary"
-                  />
-                ) : (
-                  <span className="text-slate-700">{offer.extra_packing ? 'Ja' : 'Nein'}</span>
-                )}
-              </div>
+              {additionalServices.map((service) => {
+                const fieldName = `extra${service.name.replace(/\s+/g, '')}`
+                return (
+                  <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3">
+                        <Label className="text-slate-700">{service.name}</Label>
+                        {service.price && (
+                          <span className="text-sm font-semibold text-brand-primary">
+                            CHF {Number(service.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                      {service.description && (
+                        <p className="text-xs text-slate-600 mt-1">{service.description}</p>
+                      )}
+                    </div>
+                    {editMode ? (
+                      <input
+                        type="checkbox"
+                        checked={formData[fieldName] || false}
+                        onChange={(e) => handleChange(fieldName, e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-300 text-brand-primary"
+                      />
+                    ) : (
+                      <span className="text-slate-700">{(formData[fieldName] || offer[`extra_${service.name.toLowerCase().replace(/\s+/g, '_')}`]) ? 'Ja' : 'Nein'}</span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
 

@@ -419,9 +419,23 @@ const CreateOffer = () => {
                     {services.map(service => (
                       <option key={service.id} value={service.value}>
                         {service.name}
+                        {service.pricing_model === 'hourly' && service.hourly_rate 
+                          ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
+                          : service.pricing_model === 'fixed' && service.base_price
+                          ? ` - CHF ${Number(service.base_price).toFixed(2)}`
+                          : ''}
                       </option>
                     ))}
                   </select>
+                  {(() => {
+                    const selectedService = services.find(s => s.value === formData.serviceCategory)
+                    if (selectedService && selectedService.description) {
+                      return (
+                        <p className="text-xs text-slate-600 mt-1.5">{selectedService.description}</p>
+                      )
+                    }
+                    return null
+                  })()}
                 </div>
                 <div>
                   <Label className="text-slate-700">Status</Label>
@@ -758,9 +772,16 @@ const CreateOffer = () => {
                 return (
                   <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
                     <div className="flex-1">
-                      <Label htmlFor={fieldName} className="text-slate-700 cursor-pointer font-medium">
-                        {service.name}
-                      </Label>
+                      <div className="flex items-center gap-3">
+                        <Label htmlFor={fieldName} className="text-slate-700 cursor-pointer font-medium">
+                          {service.name}
+                        </Label>
+                        {service.price && (
+                          <span className="text-sm font-semibold text-brand-primary">
+                            CHF {Number(service.price).toFixed(2)}
+                          </span>
+                        )}
+                      </div>
                       {service.description && (
                         <p className="text-sm text-slate-600 mt-1">{service.description}</p>
                       )}

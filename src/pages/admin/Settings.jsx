@@ -147,7 +147,8 @@ const SettingsPage = () => {
     })
     
     if (error) {
-      toast.error('Fehler beim Aktualisieren der Kategorie')
+      console.error('Update category error:', error)
+      toast.error(`Fehler beim Aktualisieren der Kategorie: ${error.message}`)
     } else {
       toast.success('Kategorie erfolgreich aktualisiert')
       loadSettings()
@@ -159,7 +160,8 @@ const SettingsPage = () => {
     const { error } = await updateServiceCategory(id, updates)
     
     if (error) {
-      toast.error('Fehler beim Aktualisieren der Kategorie')
+      console.error('Update category error:', error)
+      toast.error(`Fehler beim Aktualisieren der Kategorie: ${error.message}`)
     } else {
       toast.success('Kategorie erfolgreich aktualisiert')
       loadSettings()
@@ -187,26 +189,41 @@ const SettingsPage = () => {
       return
     }
     
-    const { error } = await createAdditionalService({
+    const serviceData = {
       ...newService,
+      price: newService.price ? parseFloat(newService.price) : 0,
       display_order: additionalServices.length
-    })
+    }
+    
+    console.log('Creating service with data:', serviceData)
+    
+    const { error } = await createAdditionalService(serviceData)
     
     if (error) {
-      toast.error('Fehler beim Erstellen der Zusatzleistung')
+      console.error('Create service error:', error)
+      toast.error(`Fehler beim Erstellen der Zusatzleistung: ${error.message}`)
     } else {
       toast.success('Zusatzleistung erfolgreich erstellt')
       loadSettings()
-      setNewService({ name: '', description: '', active: true })
+      setNewService({ name: '', description: '', price: '', active: true })
       setShowAddService(false)
     }
   }
 
   const handleUpdateService = async (id, updates) => {
-    const { error } = await updateAdditionalService(id, updates)
+    // Convert price to float if it exists
+    const updateData = {
+      ...updates,
+      price: updates.price ? parseFloat(updates.price) : 0
+    }
+    
+    console.log('Updating service with data:', updateData)
+    
+    const { error } = await updateAdditionalService(id, updateData)
     
     if (error) {
-      toast.error('Fehler beim Aktualisieren der Zusatzleistung')
+      console.error('Update service error:', error)
+      toast.error(`Fehler beim Aktualisieren der Zusatzleistung: ${error.message}`)
     } else {
       toast.success('Zusatzleistung erfolgreich aktualisiert')
       loadSettings()
