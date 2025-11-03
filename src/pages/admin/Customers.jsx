@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { getCustomers, createCustomer, updateCustomer, deleteCustomer, searchCustomers } from '@/lib/supabase'
+import { getCustomers, createCustomer, updateCustomer, deleteCustomer, searchCustomers, getOffers } from '@/lib/supabase'
 import { generateCustomerNumber } from '@/lib/utils'
 import { ArrowLeft, Plus, Edit, Save, X, Search, User, Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
@@ -21,6 +21,7 @@ const CustomersPage = () => {
   const [showModal, setShowModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [customerToDelete, setCustomerToDelete] = useState(null)
+  const [customerOfferCount, setCustomerOfferCount] = useState(0)
   const [editingCustomer, setEditingCustomer] = useState(null)
   const [formData, setFormData] = useState({
     customerNumber: '',
@@ -114,6 +115,16 @@ const CustomersPage = () => {
     resetForm()
   }
 
+  const openDeleteModal = async (customer) => {
+    setCustomerToDelete(customer)
+    setShowDeleteModal(true)
+    
+    // Check if customer has any offers
+    const { data } = await getOffers()
+    const customerOffers = data?.filter(offer => offer.customer_id === customer.id) || []
+    setCustomerOfferCount(customerOffers.length)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setSaving(true)
@@ -168,11 +179,17 @@ const CustomersPage = () => {
     try {
       const { error } = await deleteCustomer(customerToDelete.id)
       if (error) {
-        toast.error('Fehler beim Löschen: ' + error.message)
+        // Check if it's a foreign key constraint error
+        if (error.message.includes('foreign key constraint') || error.code === '23503') {
+          toast.error('Dieser Kunde kann nicht gelöscht werden, da noch Angebote mit diesem Kunden verknüpft sind. Bitte löschen Sie zuerst alle Angebote des Kunden.')
+        } else {
+          toast.error('Fehler beim Löschen: ' + error.message)
+        }
       } else {
         toast.success('Kunde erfolgreich gelöscht!')
         setShowDeleteModal(false)
         setCustomerToDelete(null)
+        setCustomerOfferCount(0)
         loadCustomers()
       }
     } catch (error) {
@@ -324,8 +341,7 @@ const CustomersPage = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation()
-                          setCustomerToDelete(customer)
-                          setShowDeleteModal(true)
+                          openDeleteModal(customer)
                         }}
                         size="sm"
                         variant="ghost"
@@ -363,8 +379,7 @@ const CustomersPage = () => {
                       <Button
                         onClick={(e) => {
                           e.stopPropagation()
-                          setCustomerToDelete(customer)
-                          setShowDeleteModal(true)
+                          openDeleteModal(customer)
                         }}
                         size="sm"
                         variant="ghost"
@@ -574,11 +589,33 @@ const CustomersPage = () => {
                 <p className="text-xs text-slate-500 mt-1 font-mono">{customerToDelete.customer_number}</p>
               </div>
 
+              {customerOfferCount > 0 && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <div className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-red-800 mb-1">Achtung!</h4>
+                      <p className="text-sm text-red-700">
+                        Dieser Kunde hat <span className="font-semibold">{customerOfferCount}</span> {customerOfferCount === 1 ? 'verknüpftes Angebot' : 'verknüpfte Angebote'}. 
+                        Der Kunde kann nicht gelöscht werden, solange Angebote existieren.
+                      </p>
+                      <p className="text-xs text-red-600 mt-2">
+                        Bitte löschen Sie zuerst alle Angebote dieses Kunden.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <Button
                   onClick={handleDelete}
-                  disabled={saving}
-                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                  disabled={saving || customerOfferCount > 0}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Trash2 className="mr-2 h-5 w-5" />
                   {saving ? 'Löscht...' : 'Ja, löschen'}
@@ -587,6 +624,7 @@ const CustomersPage = () => {
                   onClick={() => {
                     setShowDeleteModal(false)
                     setCustomerToDelete(null)
+                    setCustomerOfferCount(0)
                   }}
                   variant="outline"
                   disabled={saving}
