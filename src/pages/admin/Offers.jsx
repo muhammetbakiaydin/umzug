@@ -3,15 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
-import { getOffers } from '@/lib/supabase'
+import { getOffers, deleteOffer } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
-import { ArrowLeft, Plus, Search, FileText } from 'lucide-react'
+import { ArrowLeft, Plus, Search, FileText, Trash2, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 const OffersPage = () => {
   const [offers, setOffers] = useState([])
   const [filteredOffers, setFilteredOffers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(true)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [offerToDelete, setOfferToDelete] = useState(null)
+  const [deleting, setDeleting] = useState(false)
   const { signOut } = useAuth()
   const navigate = useNavigate()
 
@@ -40,6 +44,28 @@ const OffersPage = () => {
       setFilteredOffers(data)
     }
     setLoading(false)
+  }
+
+  const handleDelete = async () => {
+    if (!offerToDelete) return
+    
+    setDeleting(true)
+    try {
+      const { error } = await deleteOffer(offerToDelete.id)
+      if (error) {
+        toast.error('Fehler beim Löschen: ' + error.message)
+      } else {
+        toast.success('Angebot erfolgreich gelöscht!')
+        setShowDeleteModal(false)
+        setOfferToDelete(null)
+        loadOffers()
+      }
+    } catch (error) {
+      toast.error('Ein unerwarteter Fehler ist aufgetreten')
+      console.error(error)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -126,11 +152,12 @@ const OffersPage = () => {
             {/* Table Header - Hidden on mobile */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-600">
               <div className="col-span-2">Angebotsnummer</div>
-              <div className="col-span-3">Kunde</div>
+              <div className="col-span-2">Kunde</div>
               <div className="col-span-2">Umzugsdatum</div>
               <div className="col-span-2">Kategorie</div>
               <div className="col-span-2">Total</div>
               <div className="col-span-1">Status</div>
+              <div className="col-span-1 text-right">Aktionen</div>
             </div>
             
             {/* Table Body */}
@@ -154,7 +181,7 @@ const OffersPage = () => {
                       </div>
                     </div>
                     
-                    <div className="col-span-3 flex items-center">
+                    <div className="col-span-2 flex items-center">
                       <div className="min-w-0">
                         <div className="text-sm font-medium text-slate-900 truncate">
                           {offer.customer_first_name} {offer.customer_last_name}
@@ -191,6 +218,21 @@ const OffersPage = () => {
                         {offer.status}
                       </span>
                     </div>
+                    
+                    <div className="col-span-1 flex items-center justify-end">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setOfferToDelete(offer)
+                          setShowDeleteModal(true)
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Mobile View */}
@@ -219,6 +261,18 @@ const OffersPage = () => {
                         </span>
                       </div>
                     </div>
+                    <Button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setOfferToDelete(offer)
+                        setShowDeleteModal(true)
+                      }}
+                      size="sm"
+                      variant="ghost"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
@@ -226,6 +280,63 @@ const OffersPage = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && offerToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Angebot löschen</h2>
+                  <p className="text-sm text-slate-600 mt-1">Diese Aktion kann nicht rückgängig gemacht werden</p>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50 rounded-lg p-4 mb-6 border border-slate-200">
+                <p className="text-sm text-slate-700 mb-2">
+                  Möchten Sie das folgende Angebot wirklich löschen?
+                </p>
+                <p className="font-semibold text-slate-900 font-mono mb-1">
+                  {offerToDelete.offer_number}
+                </p>
+                <p className="text-sm text-slate-600">
+                  {offerToDelete.customer_first_name} {offerToDelete.customer_last_name}
+                </p>
+                <p className="text-sm text-slate-600">
+                  Total: <span className="font-semibold">CHF {offerToDelete.total?.toFixed(2) || '0.00'}</span>
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                >
+                  <Trash2 className="mr-2 h-5 w-5" />
+                  {deleting ? 'Löscht...' : 'Ja, löschen'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setOfferToDelete(null)
+                  }}
+                  variant="outline"
+                  disabled={deleting}
+                  className="border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                >
+                  <X className="mr-2 h-5 w-5" />
+                  Abbrechen
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
