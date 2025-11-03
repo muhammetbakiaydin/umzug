@@ -210,6 +210,15 @@ export const updateCustomer = async (id, customerData) => {
   return { data, error }
 }
 
+export const deleteCustomer = async (id) => {
+  const { error } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
+  
+  return { error }
+}
+
 // Offers
 export const createOffer = async (offerData) => {
   const { data, error } = await supabase

@@ -5,9 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { toast } from 'sonner'
-import { getCustomers, createCustomer, updateCustomer, searchCustomers } from '@/lib/supabase'
+import { getCustomers, createCustomer, updateCustomer, deleteCustomer, searchCustomers } from '@/lib/supabase'
 import { generateCustomerNumber } from '@/lib/utils'
-import { ArrowLeft, Plus, Edit, Save, X, Search, User } from 'lucide-react'
+import { ArrowLeft, Plus, Edit, Save, X, Search, User, Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 const CustomersPage = () => {
@@ -19,6 +19,8 @@ const CustomersPage = () => {
   const [filteredCustomers, setFilteredCustomers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [customerToDelete, setCustomerToDelete] = useState(null)
   const [editingCustomer, setEditingCustomer] = useState(null)
   const [formData, setFormData] = useState({
     customerNumber: '',
@@ -150,6 +152,28 @@ const CustomersPage = () => {
           closeModal()
           loadCustomers()
         }
+      }
+    } catch (error) {
+      toast.error('Ein unerwarteter Fehler ist aufgetreten')
+      console.error(error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!customerToDelete) return
+    
+    setSaving(true)
+    try {
+      const { error } = await deleteCustomer(customerToDelete.id)
+      if (error) {
+        toast.error('Fehler beim Löschen: ' + error.message)
+      } else {
+        toast.success('Kunde erfolgreich gelöscht!')
+        setShowDeleteModal(false)
+        setCustomerToDelete(null)
+        loadCustomers()
       }
     } catch (error) {
       toast.error('Ein unerwarteter Fehler ist aufgetreten')
@@ -297,6 +321,18 @@ const CustomersPage = () => {
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCustomerToDelete(customer)
+                          setShowDeleteModal(true)
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
 
@@ -312,17 +348,31 @@ const CustomersPage = () => {
                       <div className="text-xs text-slate-500 truncate">{customer.email}</div>
                       <div className="text-xs text-slate-500 mt-0.5">{customer.phone}</div>
                     </div>
-                    <Button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        openEditModal(customer)
-                      }}
-                      size="sm"
-                      variant="ghost"
-                      className="text-slate-600 hover:text-brand-primary hover:bg-brand-primary/10 flex-shrink-0"
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1">
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditModal(customer)
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="text-slate-600 hover:text-brand-primary hover:bg-brand-primary/10 flex-shrink-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setCustomerToDelete(customer)
+                          setShowDeleteModal(true)
+                        }}
+                        size="sm"
+                        variant="ghost"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 flex-shrink-0"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -493,6 +543,59 @@ const CustomersPage = () => {
                   </Button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && customerToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-md shadow-2xl">
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Trash2 className="w-6 h-6 text-red-600" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Kunde löschen</h2>
+                  <p className="text-sm text-slate-600 mt-1">Diese Aktion kann nicht rückgängig gemacht werden</p>
+                </div>
+              </div>
+              
+              <div className="bg-slate-50 rounded-lg p-4 mb-6 border border-slate-200">
+                <p className="text-sm text-slate-700 mb-2">
+                  Möchten Sie den folgenden Kunden wirklich löschen?
+                </p>
+                <p className="font-semibold text-slate-900">
+                  {customerToDelete.salutation} {customerToDelete.first_name} {customerToDelete.last_name}
+                </p>
+                <p className="text-sm text-slate-600">{customerToDelete.email}</p>
+                <p className="text-xs text-slate-500 mt-1 font-mono">{customerToDelete.customer_number}</p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  onClick={handleDelete}
+                  disabled={saving}
+                  className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold"
+                >
+                  <Trash2 className="mr-2 h-5 w-5" />
+                  {saving ? 'Löscht...' : 'Ja, löschen'}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setCustomerToDelete(null)
+                  }}
+                  variant="outline"
+                  disabled={saving}
+                  className="border-slate-300 bg-white text-slate-700 hover:bg-slate-100"
+                >
+                  <X className="mr-2 h-5 w-5" />
+                  Abbrechen
+                </Button>
+              </div>
             </div>
           </div>
         </div>
