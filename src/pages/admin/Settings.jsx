@@ -315,7 +315,7 @@ const SettingsPage = () => {
                       value={newCategory.name}
                       onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
                       placeholder="z.B. Umzug"
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                   </div>
                   <div>
@@ -324,7 +324,7 @@ const SettingsPage = () => {
                       value={newCategory.value}
                       onChange={(e) => setNewCategory({ ...newCategory, value: e.target.value })}
                       placeholder="z.B. umzug"
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                   </div>
                   <div className="flex items-end gap-2">
@@ -422,7 +422,7 @@ const SettingsPage = () => {
                             value={editingCategory.name}
                             onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value })}
                             placeholder="z.B. Umzug"
-                            className="bg-white border-slate-300 mt-1"
+                            className="bg-white border-slate-300 mt-1 text-black"
                           />
                         </div>
 
@@ -433,7 +433,7 @@ const SettingsPage = () => {
                             value={editingCategory.description || ''}
                             onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })}
                             placeholder="z.B. Professioneller Umzugsservice"
-                            className="bg-white border-slate-300 mt-1"
+                            className="bg-white border-slate-300 mt-1 text-black"
                           />
                         </div>
 
@@ -443,7 +443,7 @@ const SettingsPage = () => {
                           <select
                             value={editingCategory.pricing_model || 'custom'}
                             onChange={(e) => setEditingCategory({ ...editingCategory, pricing_model: e.target.value })}
-                            className="w-full h-10 rounded-md border border-slate-300 bg-white text-slate-900 px-3 py-2 mt-1"
+                            className="w-full h-10 rounded-md border border-slate-300 bg-white text-black px-3 py-2 mt-1"
                           >
                             <option value="hourly">Stündlich</option>
                             <option value="fixed">Festpreis</option>
@@ -461,7 +461,7 @@ const SettingsPage = () => {
                               value={editingCategory.hourly_rate || 0}
                               onChange={(e) => setEditingCategory({ ...editingCategory, hourly_rate: e.target.value })}
                               placeholder="120"
-                              className="bg-white border-slate-300 mt-1"
+                              className="bg-white border-slate-300 mt-1 text-black"
                             />
                           </div>
 
@@ -474,7 +474,7 @@ const SettingsPage = () => {
                               value={editingCategory.base_price || 0}
                               onChange={(e) => setEditingCategory({ ...editingCategory, base_price: e.target.value })}
                               placeholder="0"
-                              className="bg-white border-slate-300 mt-1"
+                              className="bg-white border-slate-300 mt-1 text-black"
                             />
                           </div>
                         </div>
@@ -543,7 +543,7 @@ const SettingsPage = () => {
                       value={newService.name}
                       onChange={(e) => setNewService({ ...newService, name: e.target.value })}
                       placeholder="z.B. Reinigung"
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                   </div>
                   <div>
@@ -554,7 +554,7 @@ const SettingsPage = () => {
                       value={newService.price}
                       onChange={(e) => setNewService({ ...newService, price: e.target.value })}
                       placeholder="z.B. 150.00"
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -563,7 +563,7 @@ const SettingsPage = () => {
                       value={newService.description}
                       onChange={(e) => setNewService({ ...newService, description: e.target.value })}
                       placeholder="z.B. Endreinigung der Wohnung"
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                   </div>
                 </div>
@@ -640,7 +640,7 @@ const SettingsPage = () => {
                               value={editingService.name}
                               onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
                               placeholder="z.B. Reinigung"
-                              className="bg-white mt-1.5"
+                              className="bg-white mt-1.5 text-black"
                             />
                           </div>
                           
@@ -652,7 +652,7 @@ const SettingsPage = () => {
                               value={editingService.price || ''}
                               onChange={(e) => setEditingService({ ...editingService, price: e.target.value })}
                               placeholder="z.B. 150.00"
-                              className="bg-white mt-1.5"
+                              className="bg-white mt-1.5 text-black"
                             />
                           </div>
                         </div>
@@ -663,7 +663,7 @@ const SettingsPage = () => {
                             value={editingService.description || ''}
                             onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
                             placeholder="Detaillierte Beschreibung der Zusatzleistung..."
-                            className="w-full mt-1.5 px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none"
+                            className="w-full mt-1.5 px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none text-black"
                             rows="3"
                           />
                         </div>
@@ -722,7 +722,7 @@ const SettingsPage = () => {
                       step="0.1"
                       value={vatRate}
                       onChange={(e) => setVatRate(e.target.value)}
-                      className="bg-white"
+                      className="bg-white text-black"
                     />
                     <Button onClick={handleSaveVat} className="bg-green-600 hover:bg-green-700">
                       <Save className="mr-2 h-4 w-4" />
