@@ -346,6 +346,7 @@ const SettingsPage = () => {
                         })
                       }}
                       variant="outline"
+                      className="border-slate-300 text-black hover:bg-slate-100"
                     >
                       <X className="mr-2 h-4 w-4" />
                       Abbrechen
@@ -578,6 +579,7 @@ const SettingsPage = () => {
                       setNewService({ name: '', description: '', price: '', active: true })
                     }}
                     variant="outline"
+                    className="border-slate-300 text-black hover:bg-slate-100"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Abbrechen
@@ -692,7 +694,7 @@ const SettingsPage = () => {
                           <Button
                             onClick={() => setEditingService(null)}
                             variant="outline"
-                            className="bg-white"
+                            className="bg-white border-slate-300 text-black hover:bg-slate-100"
                           >
                             <X className="mr-2 h-4 w-4" />
                             Abbrechen
@@ -734,6 +736,7 @@ const SettingsPage = () => {
                         setVatRate(companySettings.vat_rate)
                       }}
                       variant="outline"
+                      className="border-slate-300 text-black hover:bg-slate-100"
                     >
                       <X className="mr-2 h-4 w-4" />
                       Abbrechen
