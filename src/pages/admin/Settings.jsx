@@ -25,9 +25,9 @@ const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState('services')
   
   // Company Settings
-  const [companySettings, setCompanySettings] = useState({ vat_rate: 7.7 })
+  const [companySettings, setCompanySettings] = useState({ vat_rate: 8.1 })
   const [editingVat, setEditingVat] = useState(false)
-  const [vatRate, setVatRate] = useState(7.7)
+  const [vatRate, setVatRate] = useState(8.1)
   
   // Service Categories
   const [serviceCategories, setServiceCategories] = useState([])
@@ -578,74 +578,98 @@ const SettingsPage = () => {
             {/* Services List */}
             <div className="space-y-3">
               {additionalServices.map((service) => (
-                <div
-                  key={service.id}
-                  className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
-                >
-                  {editingService?.id === service.id ? (
-                    <div className="flex-1 grid md:grid-cols-2 gap-4 mr-4">
-                      <Input
-                        value={editingService.name}
-                        onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
-                        className="bg-white"
-                      />
-                      <Input
-                        value={editingService.description || ''}
-                        onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
-                        className="bg-white"
-                      />
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onClick={() => handleUpdateService(service.id, editingService)}
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <Save className="h-4 w-4" />
-                        </Button>
-                        <Button onClick={() => setEditingService(null)} size="sm" variant="outline">
-                          <X className="h-4 w-4" />
-                        </Button>
+                <div key={service.id} className="bg-slate-50 rounded-lg border border-slate-200">
+                  {/* Service Header */}
+                  <div className="flex items-center justify-between p-4">
+                    <div className="flex-1">
+                      <div className="font-medium text-slate-900">{service.name}</div>
+                      {service.description && (
+                        <div className="text-sm text-slate-600">{service.description}</div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${
+                          service.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`}
+                      >
+                        {service.active ? 'Aktiv' : 'Inaktiv'}
+                      </span>
+                      <Button
+                        onClick={() => setEditingService(editingService?.id === service.id ? null : service)}
+                        size="sm"
+                        className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteService(service.id)}
+                        size="sm"
+                        className="bg-white border border-slate-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Expandable Edit Form */}
+                  {editingService?.id === service.id && (
+                    <div className="border-t border-slate-200 p-4 bg-white">
+                      <h4 className="font-medium text-slate-900 mb-4">Zusatzleistung bearbeiten</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <Label className="text-slate-700 text-sm font-medium">Leistungsname *</Label>
+                          <Input
+                            value={editingService.name}
+                            onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                            placeholder="z.B. Reinigung"
+                            className="bg-white mt-1.5"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label className="text-slate-700 text-sm font-medium">Beschreibung (optional)</Label>
+                          <textarea
+                            value={editingService.description || ''}
+                            onChange={(e) => setEditingService({ ...editingService, description: e.target.value })}
+                            placeholder="Detaillierte Beschreibung der Zusatzleistung..."
+                            className="w-full mt-1.5 px-3 py-2 border border-slate-200 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent resize-none"
+                            rows="3"
+                          />
+                        </div>
+
+                        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                          <div>
+                            <Label className="text-slate-900 font-medium">Status</Label>
+                            <p className="text-sm text-slate-600">
+                              Leistung für Angebote {editingService.active ? 'verfügbar' : 'nicht verfügbar'}
+                            </p>
+                          </div>
+                          <Switch
+                            checked={editingService.active}
+                            onCheckedChange={(checked) => setEditingService({ ...editingService, active: checked })}
+                          />
+                        </div>
+
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            onClick={() => handleUpdateService(service.id, editingService)}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Save className="mr-2 h-4 w-4" />
+                            Änderungen speichern
+                          </Button>
+                          <Button
+                            onClick={() => setEditingService(null)}
+                            variant="outline"
+                            className="bg-white"
+                          >
+                            <X className="mr-2 h-4 w-4" />
+                            Abbrechen
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  ) : (
-                    <>
-                      <div className="flex-1">
-                        <div className="font-medium text-slate-900">{service.name}</div>
-                        {service.description && (
-                          <div className="text-sm text-slate-600">{service.description}</div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            service.active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                          }`}
-                        >
-                          {service.active ? 'Aktiv' : 'Inaktiv'}
-                        </span>
-                        <Button
-                          onClick={() => setEditingService(service)}
-                          size="sm"
-                          className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          onClick={() => handleUpdateService(service.id, { active: !service.active })}
-                          size="sm"
-                          className={`bg-white border border-slate-200 ${service.active ? 'text-orange-600 hover:bg-orange-50' : 'text-green-600 hover:bg-green-50'}`}
-                        >
-                          {service.active ? 'Deaktivieren' : 'Aktivieren'}
-                        </Button>
-                        <Button
-                          onClick={() => handleDeleteService(service.id)}
-                          size="sm"
-                          className="bg-white border border-slate-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </>
                   )}
                 </div>
               ))}
