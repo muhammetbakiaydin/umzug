@@ -46,7 +46,7 @@ const SettingsPage = () => {
   // Additional Services
   const [additionalServices, setAdditionalServices] = useState([])
   const [editingService, setEditingService] = useState(null)
-  const [newService, setNewService] = useState({ name: '', description: '', active: true })
+  const [newService, setNewService] = useState({ name: '', description: '', price: '', active: true })
   const [showAddService, setShowAddService] = useState(false)
 
   useEffect(() => {
@@ -547,6 +547,17 @@ const SettingsPage = () => {
                     />
                   </div>
                   <div>
+                    <Label className="text-slate-700">Preis (CHF)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={newService.price}
+                      onChange={(e) => setNewService({ ...newService, price: e.target.value })}
+                      placeholder="z.B. 150.00"
+                      className="bg-white"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
                     <Label className="text-slate-700">Beschreibung (optional)</Label>
                     <Input
                       value={newService.description}
@@ -564,7 +575,7 @@ const SettingsPage = () => {
                   <Button
                     onClick={() => {
                       setShowAddService(false)
-                      setNewService({ name: '', description: '', active: true })
+                      setNewService({ name: '', description: '', price: '', active: true })
                     }}
                     variant="outline"
                   >
@@ -582,7 +593,12 @@ const SettingsPage = () => {
                   {/* Service Header */}
                   <div className="flex items-center justify-between p-4">
                     <div className="flex-1">
-                      <div className="font-medium text-slate-900">{service.name}</div>
+                      <div className="flex items-center gap-3">
+                        <div className="font-medium text-slate-900">{service.name}</div>
+                        <div className="text-sm font-semibold text-brand-primary">
+                          CHF {service.price ? Number(service.price).toFixed(2) : '0.00'}
+                        </div>
+                      </div>
                       {service.description && (
                         <div className="text-sm text-slate-600">{service.description}</div>
                       )}
@@ -617,14 +633,28 @@ const SettingsPage = () => {
                     <div className="border-t border-slate-200 p-4 bg-white">
                       <h4 className="font-medium text-slate-900 mb-4">Zusatzleistung bearbeiten</h4>
                       <div className="space-y-4">
-                        <div>
-                          <Label className="text-slate-700 text-sm font-medium">Leistungsname *</Label>
-                          <Input
-                            value={editingService.name}
-                            onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
-                            placeholder="z.B. Reinigung"
-                            className="bg-white mt-1.5"
-                          />
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-slate-700 text-sm font-medium">Leistungsname *</Label>
+                            <Input
+                              value={editingService.name}
+                              onChange={(e) => setEditingService({ ...editingService, name: e.target.value })}
+                              placeholder="z.B. Reinigung"
+                              className="bg-white mt-1.5"
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label className="text-slate-700 text-sm font-medium">Preis (CHF) *</Label>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              value={editingService.price || ''}
+                              onChange={(e) => setEditingService({ ...editingService, price: e.target.value })}
+                              placeholder="z.B. 150.00"
+                              className="bg-white mt-1.5"
+                            />
+                          </div>
                         </div>
                         
                         <div>
