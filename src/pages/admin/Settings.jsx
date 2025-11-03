@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Plus, Pencil, Trash2, Save, X } from 'lucide-react'
+import { ArrowLeft, Plus, Pencil, Trash2, Save, X, Package, CheckSquare, Percent } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   getCompanySettings,
@@ -203,33 +203,36 @@ const SettingsPage = () => {
         <div className="bg-white rounded-lg border border-slate-200 mb-6">
           <div className="flex border-b border-slate-200">
             <button
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'services'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('services')}
             >
+              <Package className="h-4 w-4" />
               Service-Kategorien
             </button>
             <button
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'additional'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('additional')}
             >
+              <CheckSquare className="h-4 w-4" />
               Zusatzleistungen
             </button>
             <button
-              className={`px-6 py-3 font-medium ${
+              className={`px-6 py-3 font-medium flex items-center gap-2 ${
                 activeTab === 'vat'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
               onClick={() => setActiveTab('vat')}
             >
+              <Percent className="h-4 w-4" />
               MwSt. Satz
             </button>
           </div>
