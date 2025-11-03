@@ -128,8 +128,8 @@ const OfferPrint = () => {
         }
         
         .logo-box {
-          width: 60px;
-          height: 60px;
+          width: 80px;
+          height: 80px;
           display: flex;
           align-items: center;
           justify-content: center;
