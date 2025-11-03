@@ -593,6 +593,15 @@ const OfferPrint = () => {
         <span className="total-amount">{formatCurrency((offer.flat_rate_price || 0) * 1.077)}</span>
       </div>
 
+      {/* Page 1 Footer */}
+      <div className="page-footer">
+        <p className="footer-company">Umzug UNIT GmbH</p>
+        <p>Tel: 032 310 70 60 / 078 935 82 82 • E-Mail: info@umzug-unit.ch</p>
+      </div>
+
+      {/* Page Break - Start Page 2 */}
+      <div className="page-break"></div>
+
       {/* Two-column Terms Section */}
       <div className="terms-two-column">
         {/* Left Column */}
@@ -684,12 +693,6 @@ const OfferPrint = () => {
             <div className="signature-line"></div>
           </div>
         </div>
-      </div>
-
-      {/* Page 1 Footer */}
-      <div className="page-footer">
-        <p className="footer-company">Umzug UNIT GmbH</p>
-        <p>Tel: 032 310 70 60 / 078 935 82 82 • E-Mail: info@umzug-unit.ch</p>
       </div>
 
     </div>
