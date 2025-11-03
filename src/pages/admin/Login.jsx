@@ -49,7 +49,7 @@ const AdminLogin = () => {
         
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-12">
-            <img src="/cropped-umzug-final.png" alt="Umzug UNIT" className="h-16 w-16 object-contain" />
+            
             <div>
               <h1 className="text-3xl font-bold">Umzug UNIT</h1>
               <p className="text-blue-200 text-sm">GmbH</p>
