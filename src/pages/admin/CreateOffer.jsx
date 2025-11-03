@@ -1,0 +1,838 @@
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+
+import { toast } from 'sonner'
+import { 
+  supabase, 
+  getServiceCategories, 
+  createOffer, 
+  createCustomer, 
+  getCustomers, 
+  searchCustomers,
+  getAllAdditionalServices,
+  getCompanySettings
+} from '@/lib/supabase'
+import { generateOfferNumber, generateCustomerNumber } from '@/lib/utils'
+import { ArrowLeft, Save, Search } from 'lucide-react'
+import { useAuth } from '@/context/AuthContext'
+
+const CreateOffer = () => {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [services, setServices] = useState([])
+  const [additionalServices, setAdditionalServices] = useState([])
+  const [vatRate, setVatRate] = useState(7.7)
+  const [customers, setCustomers] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+  const [offerNumber, setOfferNumber] = useState('')
+  
+  const [formData, setFormData] = useState({
+    // Offer Details
+    offerNumber: '',
+    offerDate: new Date().toISOString().split('T')[0],
+    customerNumber: '',
+    contactPerson: '',
+    serviceCategory: 'umzug',
+    selectedCustomerId: null,
+    
+    // Current Address (Aktueller Standort)
+    fromSalutation: 'Herr',
+    fromFirstName: '',
+    fromLastName: '',
+    fromStreet: '',
+    fromZip: '',
+    fromCity: '',
+    fromPhone: '',
+    fromEmail: '',
+    fromElevator: false,
+    
+    // New Address (Neuer Standort)
+    toStreet: '',
+    toZip: '',
+    toCity: '',
+    toElevator: false,
+    
+    // Move Details (Umzugsdetails)
+    movingDate: '',
+    startTime: '',
+    cleaningDate: '',
+    cleaningStartTime: '',
+    object: '',
+    
+    // Move Services (Umzugsleistungen)
+    trucks: 1,
+    workers: 2,
+    boxesNote: '20 Umzugskisten Kostenlos zur Verfügung',
+    assemblyNote: 'Inkl. De/Montage',
+    flatRatePrice: 0,
+    
+    // Extra Services (Zusatzleistungen)
+    extraCleaning: false,
+    extraDisposal: false,
+    extraPacking: false,
+    
+    notes: '',
+    status: 'draft',
+  })
+
+  useEffect(() => {
+    loadInitialData()
+  }, [])
+
+  const loadInitialData = async () => {
+    // Load service categories
+    const { data: cats } = await getServiceCategories()
+    if (cats) setServices(cats)
+    
+    // Load additional services
+    const { data: addServices } = await getAllAdditionalServices()
+    if (addServices) setAdditionalServices(addServices.filter(s => s.active))
+    
+    // Load VAT rate from company settings
+    const { data: settings } = await getCompanySettings()
+    if (settings && settings.vat_rate) setVatRate(settings.vat_rate)
+    
+    // Load customers
+    const { data: custs } = await getCustomers()
+    if (custs) setCustomers(custs)
+    
+    // Generate offer number
+    const newOfferNumber = await generateOfferNumber(supabase)
+    setOfferNumber(newOfferNumber)
+    setFormData(prev => ({ ...prev, offerNumber: newOfferNumber }))
+  }
+
+  const handleCustomerSearch = async (term) => {
+    setSearchTerm(term)
+    if (term.length > 0) {
+      const { data } = await searchCustomers(term)
+      if (data) setCustomers(data)
+      setShowCustomerDropdown(true)
+    } else {
+      const { data: custs } = await getCustomers()
+      if (custs) setCustomers(custs)
+      setShowCustomerDropdown(false)
+    }
+  }
+
+  const selectCustomer = (customer) => {
+    if (customer === 'new') {
+      // Reset to new customer
+      setFormData(prev => ({
+        ...prev,
+        selectedCustomerId: null,
+        customerNumber: '',
+        contactPerson: '',
+        fromSalutation: 'Herr',
+        fromFirstName: '',
+        fromLastName: '',
+        fromStreet: '',
+        fromZip: '',
+        fromCity: '',
+        fromPhone: '',
+        fromEmail: '',
+      }))
+      setSearchTerm('-- Neuer Kunde (manuell eingeben) --')
+    } else {
+      // Fill from existing customer
+      setFormData(prev => ({
+        ...prev,
+        selectedCustomerId: customer.id,
+        customerNumber: customer.customer_number,
+        contactPerson: `${customer.salutation || ''} ${customer.first_name} ${customer.last_name}`.trim(),
+        fromSalutation: customer.salutation || 'Herr',
+        fromFirstName: customer.first_name,
+        fromLastName: customer.last_name,
+        fromStreet: customer.address_street || '',
+        fromZip: customer.address_zip || '',
+        fromCity: customer.address_city || '',
+        fromPhone: customer.phone,
+        fromEmail: customer.email,
+      }))
+      setSearchTerm(`${customer.first_name} ${customer.last_name} (${customer.customer_number})`)
+    }
+    setShowCustomerDropdown(false)
+  }
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('de-CH', {
+      style: 'currency',
+      currency: 'CHF',
+      minimumFractionDigits: 2,
+    }).format(value).replace('CHF', 'CHF ')
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleDateString('de-CH', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    })
+  }
+
+  const formatTime = (timeString) => {
+    if (!timeString) return ''
+    return timeString.replace(':', '.')
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    try {
+      let customerId = formData.selectedCustomerId
+
+      // Create new customer if not selected
+      if (!customerId) {
+        const customerData = {
+          customer_number: generateCustomerNumber(),
+          salutation: formData.fromSalutation,
+          first_name: formData.fromFirstName,
+          last_name: formData.fromLastName,
+          email: formData.fromEmail,
+          phone: formData.fromPhone,
+          address_street: formData.fromStreet,
+          address_zip: formData.fromZip,
+          address_city: formData.fromCity,
+        }
+
+        const { data: customer, error: customerError } = await createCustomer(customerData)
+        
+        if (customerError) {
+          toast.error('Fehler beim Erstellen des Kunden: ' + customerError.message)
+          setLoading(false)
+          return
+        }
+        customerId = customer.id
+      }
+
+      // Create offer
+      const offerData = {
+        offer_number: formData.offerNumber,
+        offer_date: formData.offerDate,
+        customer_id: customerId,
+        customer_number: formData.customerNumber || generateCustomerNumber(),
+        contact_person: formData.contactPerson,
+        category: formData.serviceCategory,
+        status: formData.status,
+        
+        // Current address
+        from_salutation: formData.fromSalutation,
+        from_first_name: formData.fromFirstName,
+        from_last_name: formData.fromLastName,
+        from_street: formData.fromStreet,
+        from_zip: formData.fromZip,
+        from_city: formData.fromCity,
+        from_phone: formData.fromPhone,
+        from_email: formData.fromEmail,
+        from_elevator: formData.fromElevator,
+        
+        // New address
+        to_street: formData.toStreet,
+        to_zip: formData.toZip,
+        to_city: formData.toCity,
+        to_elevator: formData.toElevator,
+        
+        // Move details
+        moving_date: formData.movingDate,
+        start_time: formData.startTime,
+        cleaning_date: formData.cleaningDate || null,
+        cleaning_start_time: formData.cleaningStartTime || null,
+        object_description: formData.object,
+        
+        // Move services
+        trucks: formData.trucks,
+        workers: formData.workers,
+        boxes_note: formData.boxesNote,
+        assembly_note: formData.assemblyNote,
+        flat_rate_price: formData.flatRatePrice,
+        
+        // Extra services
+        extra_cleaning: formData.extraCleaning,
+        extra_disposal: formData.extraDisposal,
+        extra_packing: formData.extraPacking,
+        
+        // Pricing
+        subtotal: formData.flatRatePrice,
+        tax_rate: vatRate,
+        tax_amount: (formData.flatRatePrice * vatRate) / 100,
+        total: formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100,
+        
+        notes: formData.notes,
+        
+        // Created by
+        created_by_user_id: user?.id,
+        created_by_name: user?.email,
+      }
+
+      const { data: offer, error: offerError } = await createOffer(offerData)
+      
+      if (offerError) {
+        toast.error('Fehler beim Erstellen des Angebots: ' + offerError.message)
+      } else {
+        toast.success('Angebot erfolgreich erstellt!')
+        navigate('/admin/offers')
+      }
+    } catch (error) {
+      toast.error('Ein unerwarteter Fehler ist aufgetreten')
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleChange = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <header className="bg-white border-b border-slate-200 py-4 sticky top-0 z-50 shadow-sm">
+        <div className="container mx-auto px-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              className="text-slate-700 hover:text-brand-secondary hover:bg-slate-100"
+              onClick={() => navigate('/admin/offers')}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Zurück
+            </Button>
+            <h1 className="text-2xl font-bold text-brand-secondary">Neues Angebot erstellen</h1>
+          </div>
+          <div className="text-slate-600 text-sm">
+            Erstellt von: <span className="font-semibold text-brand-secondary">{user?.email || 'Admin'}</span>
+          </div>
+        </div>
+      </header>
+
+      {/* Form */}
+      <div className="container mx-auto px-4 py-8 max-w-5xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Offerten-Details */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Offerten-Details</h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              {/* Customer Selection */}
+              <div className="relative">
+                <Label className="text-slate-700">Kunde auswählen (Optional)</Label>
+                <div className="relative">
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 pr-10"
+                    value={searchTerm}
+                    onChange={(e) => handleCustomerSearch(e.target.value)}
+                    onFocus={() => setShowCustomerDropdown(true)}
+                    placeholder="Kunde suchen oder 'Neuer Kunde' auswählen..."
+                  />
+                  <Search className="absolute right-3 top-3 h-4 w-4 text-slate-600" />
+                </div>
+                
+                {showCustomerDropdown && (
+                  <div className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                    <div
+                      className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-brand-primary font-semibold border-b border-slate-200"
+                      onClick={() => selectCustomer('new')}
+                    >
+                      -- Neuer Kunde (manuell eingeben) --
+                    </div>
+                    {customers.map((customer) => (
+                      <div
+                        key={customer.id}
+                        className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-slate-900"
+                        onClick={() => selectCustomer(customer)}
+                      >
+                        <div className="font-semibold">
+                          {customer.first_name} {customer.last_name}
+                        </div>
+                        <div className="text-sm text-slate-600">
+                          {customer.customer_number} • {customer.email}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Offert Nr. *</Label>
+                  <Input
+                    className="bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed"
+                    value={formData.offerNumber}
+                    readOnly
+                    disabled
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Offertdatum *</Label>
+                  <Input
+                    type="date"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.offerDate}
+                    onChange={(e) => handleChange('offerDate', e.target.value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Kundennummer</Label>
+                  <Input
+                    className={`border-slate-200 text-slate-900 ${formData.selectedCustomerId ? 'bg-slate-700' : 'bg-white'}`}
+                    value={formData.customerNumber}
+                    onChange={(e) => handleChange('customerNumber', e.target.value)}
+                    readOnly={!!formData.selectedCustomerId}
+                    placeholder="Wird automatisch generiert"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Ansprechpartner</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.contactPerson}
+                    onChange={(e) => handleChange('contactPerson', e.target.value)}
+                    placeholder="z.B. Herr Minerva Marco"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Service-Kategorie *</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.serviceCategory}
+                    onChange={(e) => handleChange('serviceCategory', e.target.value)}
+                    required
+                  >
+                    {services.map(service => (
+                      <option key={service.id} value={service.value}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-slate-700">Status</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.status}
+                    onChange={(e) => handleChange('status', e.target.value)}
+                  >
+                    <option value="draft">Entwurf</option>
+                    <option value="sent">Gesendet</option>
+                    <option value="accepted">Akzeptiert</option>
+                    <option value="rejected">Abgelehnt</option>
+                    <option value="completed">Abgeschlossen</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Aktueller Standort */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Aktueller Standort</h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <Label className="text-slate-700">Anrede *</Label>
+                  <select
+                    className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromSalutation}
+                    onChange={(e) => handleChange('fromSalutation', e.target.value)}
+                    required
+                  >
+                    <option>Herr</option>
+                    <option>Frau</option>
+                    <option>Divers</option>
+                  </select>
+                </div>
+                <div>
+                  <Label className="text-slate-700">Vorname *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromFirstName}
+                    onChange={(e) => handleChange('fromFirstName', e.target.value)}
+                    required
+                    placeholder="Vorname"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Nachname *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromLastName}
+                    onChange={(e) => handleChange('fromLastName', e.target.value)}
+                    required
+                    placeholder="Nachname"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">Strasse *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromStreet}
+                    onChange={(e) => handleChange('fromStreet', e.target.value)}
+                    required
+                    placeholder="Strassenname und Hausnummer"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">PLZ *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromZip}
+                    onChange={(e) => handleChange('fromZip', e.target.value)}
+                    required
+                    placeholder="z.B. CH-4132"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Ort *</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.fromCity}
+                  onChange={(e) => handleChange('fromCity', e.target.value)}
+                  required
+                  placeholder="z.B. Muttenz"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Telefon *</Label>
+                  <Input
+                    type="tel"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromPhone}
+                    onChange={(e) => handleChange('fromPhone', e.target.value)}
+                    required
+                    placeholder="+41 00 000 00 00"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">E-Mail *</Label>
+                  <Input
+                    type="email"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromEmail}
+                    onChange={(e) => handleChange('fromEmail', e.target.value)}
+                    required
+                    placeholder="email@beispiel.ch"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="fromElevator"
+                  checked={formData.fromElevator}
+                  onChange={(e) => handleChange('fromElevator', e.target.checked)}
+                  className="w-5 h-5 rounded border-slate-200 text-brand-primary focus:ring-yellow-400 focus:ring-offset-slate-800"
+                  role="switch"
+                />
+                <Label htmlFor="fromElevator" className="text-slate-300 cursor-pointer">
+                  Lift vorhanden
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          {/* Neuer Standort */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Neuer Standort</h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <Label className="text-slate-700">Strasse *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.toStreet}
+                    onChange={(e) => handleChange('toStreet', e.target.value)}
+                    required
+                    placeholder="Strassenname und Hausnummer"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">PLZ *</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.toZip}
+                    onChange={(e) => handleChange('toZip', e.target.value)}
+                    required
+                    placeholder="z.B. CH-4132"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Ort *</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.toCity}
+                  onChange={(e) => handleChange('toCity', e.target.value)}
+                  required
+                  placeholder="z.B. Muttenz"
+                />
+              </div>
+
+              <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="toElevator"
+                  checked={formData.toElevator}
+                  onChange={(e) => handleChange('toElevator', e.target.checked)}
+                  className="w-5 h-5 rounded border-slate-200 text-brand-primary focus:ring-yellow-400 focus:ring-offset-slate-800"
+                  role="switch"
+                />
+                <Label htmlFor="toElevator" className="text-slate-300 cursor-pointer">
+                  Lift vorhanden
+                </Label>
+              </div>
+            </div>
+          </div>
+
+          {/* Umzugsdetails */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Umzugsdetails</h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Umzugstermin *</Label>
+                  <Input
+                    type="date"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.movingDate}
+                    onChange={(e) => handleChange('movingDate', e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Arbeitsbeginn *</Label>
+                  <Input
+                    type="time"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.startTime}
+                    onChange={(e) => handleChange('startTime', e.target.value)}
+                    required
+                    placeholder="z.B. 08:00"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Reinigungstermin (optional)</Label>
+                  <Input
+                    type="date"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.cleaningDate}
+                    onChange={(e) => handleChange('cleaningDate', e.target.value)}
+                    placeholder="oder 'offen'"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Reinigung Arbeitsbeginn (optional)</Label>
+                  <Input
+                    type="time"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.cleaningStartTime}
+                    onChange={(e) => handleChange('cleaningStartTime', e.target.value)}
+                    placeholder="oder 'offen'"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Objekt</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.object}
+                  onChange={(e) => handleChange('object', e.target.value)}
+                  placeholder='z.B. "2.5 Zimmer-Haus mit 4+ Etagen, 56m² (Etage 0)"'
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Umzugsleistungen */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Umzugsleistungen</h3>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">Umzugswagen (Anzahl)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.trucks}
+                    onChange={(e) => handleChange('trucks', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Umzugsmitarbeiter (Anzahl)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.workers}
+                    onChange={(e) => handleChange('workers', parseInt(e.target.value) || 0)}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Umzugskisten</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.boxesNote}
+                  onChange={(e) => handleChange('boxesNote', e.target.value)}
+                  placeholder="z.B. 20 Umzugskisten Kostenlos zur Verfügung"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">De/Montage</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.assemblyNote}
+                  onChange={(e) => handleChange('assemblyNote', e.target.value)}
+                  placeholder="z.B. Inkl. De/Montage"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Pauschalpreis Umzug (CHF)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.flatRatePrice}
+                  onChange={(e) => handleChange('flatRatePrice', parseFloat(e.target.value) || 0)}
+                  placeholder="0.00"
+                />
+                <div className="text-sm text-slate-600 mt-1">
+                  Anzeige: {formatCurrency(formData.flatRatePrice)}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Zusatzleistungen */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Zusatzleistungen</h3>
+              <p className="text-sm text-slate-600 mt-1">Klicken Sie zum Aktivieren</p>
+            </div>
+            <div className="px-6 py-5 space-y-4">
+              {additionalServices.map((service) => {
+                const fieldName = `extra${service.name.replace(/\s+/g, '')}`
+                return (
+                  <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
+                    <div className="flex-1">
+                      <Label htmlFor={fieldName} className="text-slate-700 cursor-pointer font-medium">
+                        {service.name}
+                      </Label>
+                      {service.description && (
+                        <p className="text-sm text-slate-600 mt-1">{service.description}</p>
+                      )}
+                    </div>
+                    <input
+                      type="checkbox"
+                      id={fieldName}
+                      checked={formData[fieldName] || false}
+                      onChange={(e) => handleChange(fieldName, e.target.checked)}
+                      className="w-5 h-5 rounded border-slate-200 text-brand-primary focus:ring-yellow-400 focus:ring-offset-slate-800"
+                      role="switch"
+                    />
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* Notizen */}
+          <div className="bg-white rounded-lg border border-slate-200">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Notizen</h3>
+            </div>
+            <div className="px-6 py-5">
+              <textarea
+                className="w-full min-h-[100px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                value={formData.notes}
+                onChange={(e) => handleChange('notes', e.target.value)}
+                placeholder="Zusätzliche Notizen oder besondere Anforderungen..."
+              />
+            </div>
+          </div>
+
+          {/* Preiskalkulation */}
+          <div className="bg-white rounded-lg border-2 border-brand-primary/20">
+            <div className="px-6 py-5 border-b border-slate-200">
+              <h3 className="text-base font-semibold text-slate-900">Preiskalkulation</h3>
+            </div>
+            <div className="px-6 py-5">
+              <div className="space-y-3 text-slate-300">
+                <div className="flex justify-between text-lg">
+                  <span>Zwischensumme:</span>
+                  <span className="font-mono">{formatCurrency(formData.flatRatePrice)}</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span>MwSt. ({vatRate}%):</span>
+                  <span className="font-mono">{formatCurrency((formData.flatRatePrice * vatRate) / 100)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-xl text-slate-900 border-t border-slate-200 pt-3">
+                  <span>Total:</span>
+                  <span className="font-mono text-brand-primary">{formatCurrency(formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button 
+              type="submit" 
+              size="lg" 
+              className="flex-1 bg-brand-primary hover:bg-[#d16635] text-slate-900 font-bold"
+              disabled={loading}
+            >
+              <Save className="mr-2 h-5 w-5" />
+              {loading ? 'Erstelle Angebot...' : 'Angebot erstellen'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+export default CreateOffer
