@@ -72,7 +72,7 @@ const OfferPrint = () => {
       <style>{`
         @page {
           size: A4 portrait;
-          margin: 12mm;
+          margin: 15mm 20mm;
         }
         
         * {
@@ -91,10 +91,10 @@ const OfferPrint = () => {
           width: 100%;
           max-width: 210mm;
           margin: 0 auto;
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          font-size: 9pt;
-          line-height: 1.35;
-          color: #111;
+          font-family: 'Arial', 'Helvetica', sans-serif;
+          font-size: 10pt;
+          line-height: 1.4;
+          color: #000;
           background: white;
         }
         
@@ -104,33 +104,20 @@ const OfferPrint = () => {
             padding: 0;
           }
           
+          .page-break {
+            page-break-after: always;
+          }
+          
           .no-break {
             page-break-inside: avoid;
           }
         }
         
-        /* Top accent bar */
-        .accent-bar {
-          display: flex;
-          height: 4px;
-          width: 100%;
-          margin-bottom: 20px;
-        }
-        
-        .accent-bar-black {
-          width: 75%;
-          background: #000;
-        }
-        
-        .accent-bar-yellow {
-          width: 25%;
-          background: #F7C948;
-        }
-        
-        /* Header */
+        /* Logo and Header */
         .header {
           display: flex;
           justify-content: space-between;
+          align-items: flex-start;
           margin-bottom: 24px;
         }
         
@@ -141,8 +128,8 @@ const OfferPrint = () => {
         }
         
         .logo-box {
-          width: 44px;
-          height: 44px;
+          width: 60px;
+          height: 60px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -155,9 +142,9 @@ const OfferPrint = () => {
         }
         
         .brand-text {
-          font-size: 16pt;
+          font-size: 18pt;
           font-weight: 700;
-          line-height: 1;
+          line-height: 1.2;
         }
         
         .brand-yellow {
@@ -170,17 +157,8 @@ const OfferPrint = () => {
         
         .header-right {
           text-align: right;
-          font-size: 8pt;
-          line-height: 1.25;
-        }
-        
-        .address-title {
-          font-weight: 700;
-          margin-bottom: 2px;
-        }
-        
-        .address-block {
-          margin-bottom: 8px;
+          font-size: 9pt;
+          line-height: 1.3;
         }
         
         /* Offer details area */
@@ -189,11 +167,7 @@ const OfferPrint = () => {
           grid-template-columns: 1fr 1.2fr 1.2fr;
           gap: 20px;
           margin-bottom: 20px;
-          font-size: 8pt;
-        }
-        
-        .details-left {
-          line-height: 1.5;
+          font-size: 9pt;
         }
         
         .details-left div {
@@ -201,7 +175,7 @@ const OfferPrint = () => {
         }
         
         .location-block {
-          line-height: 1.4;
+          line-height: 1.35;
         }
         
         .location-title {
@@ -215,19 +189,20 @@ const OfferPrint = () => {
         
         .email-link {
           color: #0066cc;
-          text-decoration: underline;
+          text-decoration: none;
         }
         
         /* Main content */
         .offer-title {
-          font-size: 22pt;
+          font-size: 20pt;
           font-weight: 700;
           margin-bottom: 12px;
-          margin-top: 16px;
+          margin-top: 12px;
         }
         
         .salutation {
-          margin-bottom: 8px;
+          margin-bottom: 10px;
+          font-size: 10pt;
         }
         
         .intro-text {
@@ -238,21 +213,20 @@ const OfferPrint = () => {
         /* Key-value list */
         .kv-list {
           margin-bottom: 16px;
+          font-size: 9.5pt;
         }
         
         .kv-row {
           display: flex;
-          margin-bottom: 6px;
+          margin-bottom: 5px;
         }
         
         .kv-label {
           width: 180px;
           flex-shrink: 0;
-          color: #444;
         }
         
         .kv-value {
-          color: #111;
           font-weight: 500;
         }
         
@@ -260,19 +234,19 @@ const OfferPrint = () => {
         .umzug-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 16px;
-          page-break-inside: avoid;
+          margin-bottom: 14px;
+          font-size: 9.5pt;
         }
         
         .umzug-table th,
         .umzug-table td {
-          border: 1px solid #E5E7EB;
-          padding: 10px 12px;
+          border: 1px solid #ccc;
+          padding: 8px 10px;
           text-align: left;
         }
         
         .umzug-table th {
-          background: #FAFAFA;
+          background: #f5f5f5;
           font-weight: 700;
         }
         
@@ -286,13 +260,14 @@ const OfferPrint = () => {
           display: flex;
           justify-content: space-between;
           align-items: flex-start;
-          margin-bottom: 20px;
+          margin-bottom: 18px;
+          font-size: 9.5pt;
         }
         
         .checkbox-group {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 6px;
         }
         
         .checkbox-row {
@@ -317,13 +292,13 @@ const OfferPrint = () => {
         }
         
         .checkbox {
-          width: 14px;
-          height: 14px;
+          width: 13px;
+          height: 13px;
           border: 1px solid #666;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          font-size: 11px;
+          font-size: 10px;
           font-weight: 700;
         }
         
@@ -333,14 +308,14 @@ const OfferPrint = () => {
         
         .cleaning-price {
           font-weight: 600;
-          font-size: 10pt;
         }
         
         /* Grand total */
         .grand-total {
           text-align: right;
-          margin-top: 24px;
-          font-size: 14pt;
+          margin-top: 20px;
+          margin-bottom: 24px;
+          font-size: 13pt;
           font-weight: 700;
         }
         
@@ -353,15 +328,109 @@ const OfferPrint = () => {
           display: inline;
           font-weight: 700;
         }
+        
+        /* Two-column terms section */
+        .terms-two-column {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin-bottom: 20px;
+          font-size: 9pt;
+          line-height: 1.35;
+        }
+        
+        .terms-section {
+          margin-bottom: 16px;
+        }
+        
+        .terms-heading {
+          font-weight: 700;
+          margin-bottom: 6px;
+        }
+        
+        .terms-text {
+          margin-bottom: 8px;
+        }
+        
+        .terms-text p {
+          margin-bottom: 8px;
+        }
+        
+        /* Letter body */
+        .letter-body {
+          font-size: 9.5pt;
+          line-height: 1.4;
+          margin-bottom: 20px;
+        }
+        
+        .letter-body p {
+          margin-bottom: 10px;
+        }
+        
+        .sender-block {
+          margin-top: 20px;
+          margin-bottom: 20px;
+          font-size: 9.5pt;
+        }
+        
+        .sender-block p {
+          margin-bottom: 2px;
+        }
+        
+        /* Confirmation box */
+        .confirmation-box {
+          margin-top: 24px;
+          margin-bottom: 20px;
+          font-size: 9pt;
+          line-height: 1.4;
+        }
+        
+        .confirmation-text {
+          margin-bottom: 16px;
+        }
+        
+        .signature-lines {
+          display: flex;
+          gap: 40px;
+          max-width: 500px;
+        }
+        
+        .signature-field {
+          flex: 1;
+        }
+        
+        .signature-label {
+          font-size: 8.5pt;
+          font-weight: 600;
+          margin-bottom: 4px;
+        }
+        
+        .signature-line {
+          border-bottom: 1px solid #333;
+          height: 35px;
+        }
+        
+        /* Footer */
+        .page-footer {
+          text-align: center;
+          font-size: 8.5pt;
+          color: #666;
+          margin-top: 30px;
+          padding-top: 12px;
+          border-top: 1px solid #ccc;
+        }
+        
+        .page-footer p {
+          margin-bottom: 2px;
+        }
+        
+        .footer-company {
+          font-weight: 700;
+          color: #000;
+        }
       `}</style>
 
-      {/* Top accent bar */}
-      <div className="accent-bar">
-        <div className="accent-bar-black"></div>
-        <div className="accent-bar-yellow"></div>
-      </div>
-
-      {/* Header */}
+      {/* Header with Logo */}
       <div className="header">
         <div className="header-left">
           <div className="logo-box">
@@ -373,15 +442,13 @@ const OfferPrint = () => {
           </div>
         </div>
         <div className="header-right">
-          <div className="address-block">
-            <div className="address-title">Kontakt</div>
-            <div>Umzug UNIT GmbH</div>
-            <div>Tulpenweg 22</div>
-            <div>3250 Lyss</div>
-            <div>Tel: 032 310 70 60</div>
-            <div>Tel: 078 935 82 82</div>
-            <div>info@umzug-unit.ch</div>
-          </div>
+          <div style={{ fontWeight: '700', marginBottom: '4px' }}>Kontakt</div>
+          <div>Umzug UNIT GmbH</div>
+          <div>Tulpenweg 22</div>
+          <div>3250 Lyss</div>
+          <div>Tel: 032 310 70 60</div>
+          <div>Tel: 078 935 82 82</div>
+          <div>info@umzug-unit.ch</div>
         </div>
       </div>
 
@@ -526,120 +593,105 @@ const OfferPrint = () => {
         <span className="total-amount">{formatCurrency((offer.flat_rate_price || 0) * 1.077)}</span>
       </div>
 
-      {/* Terms & Conditions */}
-      <div style={{ marginTop: '40px', fontSize: '8pt', lineHeight: '1.4', pageBreakBefore: 'auto' }}>
-        
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Versicherungen:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Gegen Verlust oder Beschädigung Ihrer Güter haften wir gemäss Schweizerischem Frachtvertragsgesetz (OF). 
-            Wir machen Sie darauf aufmerksam, dass die Ware zum Zeitwert und nicht zum Neuwert versichert ist und zwar 
-            bis zu einem Warenwert von CHF 1 Mio. Kontaktieren Sie uns bitte falls Sie das Transportgut oder einzelne 
-            Gegenstände zu Neuwert speziell versichern möchten, wir informieren Sie gerne über die Ansätze.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Vorbereitung:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Das Verpacken von kleineren Gegenständen wird durch den Kunden in Kartonschachteln bereitgestellt. 
-            Grösseres Umzugsgut wie TV und Sofa wird durch die Firma Umzug UNIT GmbH verpackt.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Verbrauchsmaterial:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Umzugsdecken werden vor Ort gratis zur Verfügung gestellt, damit das Umzugsgut gut gesichert wird. 
-            Verbrauchsmaterial wie Folien oder Bodenfliesen werden verrechnet, sowie das Depot für die Umzugskisten.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Pausen:</div>
-          <p style={{ marginBottom: '4px' }}><strong>Vor- und Nachmittag:</strong> 15 Minuten</p>
-          <p style={{ marginBottom: '8px' }}><strong>Mittagspause:</strong> 30 Minuten</p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Information:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Die Offerte setzt voraus, dass beide Standorte frei zugänglich und über das schweizer Strassennetz 
-            erreichbar sind. Ist der Lieferwert mit normalen Umzugswagen nicht oder nur erschwert zugänglich, 
-            so erfolgt die Lieferung bis zur nächsten allgemein zugänglichen Stelle die ohne Zusatzaufwand oder 
-            Zusatzkosten erreicht werden kann.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Schäden:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Schäden müssen gemäss OR Art.452 Absatz 1 sofort nach dem Umzug am Umzugsladearbeiter mitgeteilt und 
-            schriftlich auf dem Schadenmeldungsformular mit dem Unterschrift des Kunden und des Umzugschefs festgehalten 
-            werden. Schäden die nach dem Umzug können -abgesehen von dem im OR Art. 452 Absätze 2 und 3 erwähnten 
-            äusserlich nicht erkennbaren Schäden mit einer Reklamationsfrist von 2 Tagen- nicht mehr berücksichtigt werden.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '6px' }}>Zahlungsbedingungen:</div>
-          <p style={{ marginBottom: '8px' }}>
-            Barzahlung am Abladeort nach dem Umzug an den Teamleiter. Dies betrifft den Betrag für den gesammten 
-            Umzug und Reinigung.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '24px', marginTop: '24px', padding: '12px', background: '#f9f9f9', border: '1px solid #ddd' }}>
-          <p style={{ marginBottom: '8px' }}>
-            Falls Ihnen unser Angebot zusagt, bitten wir Sie uns dieses umgehend unterschrieben zurück zu schicken, 
-            damit wir den von Ihnen gewünschten Termin frühzeitig reservieren können.
-          </p>
-          <p style={{ marginBottom: '0' }}>
-            Wir würden uns freuen, diesen Auftrag für Sie auszuführen und sichern Ihnen in jeder Beziehung eine 
-            fachmännische und zuverlässigen Umzug zu. Falls Sie Fragen haben, stehen wir Ihnen gerne zur Verfügung.
-          </p>
-        </div>
-
-        <div style={{ marginBottom: '24px' }}>
-          <p style={{ marginBottom: '2px' }}>Freundliche Grüsse</p>
-          <p style={{ marginBottom: '8px' }}>Verkaufsleiter<br />Minerva Marco</p>
-        </div>
-
-        <div style={{ background: '#172b4c', color: 'white', padding: '16px', marginBottom: '24px' }}>
-          <div style={{ fontWeight: '700', fontSize: '10pt', marginBottom: '8px' }}>Kontakt</div>
-          <p style={{ marginBottom: '4px' }}><strong>Umzug UNIT GmbH</strong></p>
-          <p style={{ marginBottom: '2px' }}>Tulpenweg 22</p>
-          <p style={{ marginBottom: '8px' }}>3250 Lyss</p>
-          <p style={{ marginBottom: '2px' }}><strong>Tel:</strong> 032 310 70 60</p>
-          <p style={{ marginBottom: '2px' }}><strong>Tel:</strong> 078 935 82 82</p>
-          <p style={{ marginBottom: '0' }}><strong>E-Mail:</strong> info@umzug-unit.ch</p>
-        </div>
-
-        <div style={{ background: '#fff9e6', border: '2px solid #ffd700', padding: '16px', marginBottom: '24px', pageBreakInside: 'avoid' }}>
-          <p style={{ marginBottom: '12px', fontWeight: '600' }}>
-            Hiermit erteile ich der Firma Umzug UNIT GmbH den obgenannten Auftrag und bestätige, dieses Angebot gelesen 
-            zu haben und mit allen Punkten einverstanden zu sein. Mit der Unterschrift bestätigen Sie, dass Sie mit 
-            den AGB's und der Offerte einverstanden sind.
-          </p>
-          <div style={{ display: 'flex', gap: '24px', marginTop: '16px' }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '8pt', fontWeight: '600', marginBottom: '4px' }}>Ort, Datum</div>
-              <div style={{ borderBottom: '1px solid #333', height: '30px' }}></div>
+      {/* Two-column Terms Section */}
+      <div className="terms-two-column">
+        {/* Left Column */}
+        <div>
+          <div className="terms-section">
+            <div className="terms-heading">Versicherungen</div>
+            <div className="terms-text">
+              <p>Gegen Verlust oder Beschädigung Ihrer Güter haften wir gemäss Schweizerischem Frachtvertragsgesetz (OF). Wir machen Sie darauf aufmerksam, dass die Ware zum Zeitwert und nicht zum Neuwert versichert ist und zwar bis zu einem Warenwert von CHF 1 Mio.</p>
             </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '8pt', fontWeight: '600', marginBottom: '4px' }}>Unterschrift</div>
-              <div style={{ borderBottom: '1px solid #333', height: '30px' }}></div>
+          </div>
+
+          <div className="terms-section">
+            <div className="terms-heading">Vorbereitung</div>
+            <div className="terms-text">
+              <p>Das Verpacken von kleineren Gegenständen wird durch den Kunden in Kartonschachteln bereitgestellt. Grösseres Umzugsgut wie TV und Sofa wird durch die Firma Umzug UNIT GmbH verpackt.</p>
+            </div>
+          </div>
+
+          <div className="terms-section">
+            <div className="terms-heading">Verbrauchsmaterial</div>
+            <div className="terms-text">
+              <p>Umzugsdecken werden vor Ort gratis zur Verfügung gestellt, damit das Umzugsgut gut gesichert wird. Verbrauchsmaterial wie Folien oder Bodenfliesen werden verrechnet, sowie das Depot für die Umzugskisten.</p>
+            </div>
+          </div>
+
+          <div className="terms-section">
+            <div className="terms-heading">Pausen</div>
+            <div className="terms-text">
+              <p><strong>Vor- und Nachmittag:</strong> 15 Minuten</p>
+              <p><strong>Mittagspause:</strong> 30 Minuten</p>
             </div>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', fontSize: '8pt', color: '#666', borderTop: '1px solid #ddd', paddingTop: '12px' }}>
-          <p style={{ fontWeight: '600', marginBottom: '4px', color: '#172b4c' }}>Umzug UNIT GmbH</p>
-          <p style={{ marginBottom: '2px' }}>Tel: 032 310 70 60 / 078 935 82 82</p>
-          <p style={{ marginBottom: '0' }}>E-Mail: info@umzug-unit.ch</p>
-        </div>
+        {/* Right Column */}
+        <div>
+          <div className="terms-section">
+            <div className="terms-heading">Information</div>
+            <div className="terms-text">
+              <p>Die Offerte setzt voraus, dass beide Standorte frei zugänglich und über das schweizer Strassennetz erreichbar sind. Ist der Lieferwert mit normalen Umzugswagen nicht oder nur erschwert zugänglich, so erfolgt die Lieferung bis zur nächsten allgemein zugänglichen Stelle die ohne Zusatzaufwand oder Zusatzkosten erreicht werden kann.</p>
+            </div>
+          </div>
 
+          <div className="terms-section">
+            <div className="terms-heading">Schäden</div>
+            <div className="terms-text">
+              <p>Schäden müssen gemäss OR Art.452 Absatz 1 sofort nach dem Umzug am Umzugsladearbeiter mitgeteilt und schriftlich auf dem Schadenmeldungsformular mit dem Unterschrift des Kunden und des Umzugschefs festgehalten werden.</p>
+            </div>
+          </div>
+
+          <div className="terms-section">
+            <div className="terms-heading">Zahlungsbedingungen</div>
+            <div className="terms-text">
+              <p>Barzahlung am Abladeort nach dem Umzug an den Teamleiter. Dies betrifft den Betrag für den gesammten Umzug und Reinigung.</p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Letter Body */}
+      <div className="letter-body">
+        <p>Guten Tag {offer.from_salutation} {offer.from_last_name},</p>
+        <p>Falls Ihnen unser Angebot zusagt, bitten wir Sie uns dieses umgehend unterschrieben zurück zu schicken, damit wir den von Ihnen gewünschten Termin frühzeitig reservieren können.</p>
+        <p>Wir würden uns freuen, diesen Auftrag für Sie auszuführen und sichern Ihnen in jeder Beziehung eine fachmännische und zuverlässige Dienstleistung zu. Falls Sie Fragen haben, stehen wir Ihnen gerne zur Verfügung.</p>
+      </div>
+
+      {/* Sender Block */}
+      <div className="sender-block">
+        <p>Freundliche Grüsse</p>
+        <p><strong>Verkaufsleiter</strong></p>
+        <p>Minerva Marco</p>
+        <p style={{ marginTop: '8px' }}><strong>Umzug UNIT GmbH</strong></p>
+        <p>Tulpenweg 22</p>
+        <p>3250 Lyss</p>
+      </div>
+
+      {/* Confirmation Statement with Signature Lines */}
+      <div className="confirmation-box no-break">
+        <div className="confirmation-text">
+          Hiermit erteile ich der Firma Umzug UNIT GmbH den obgenannten Auftrag und bestätige, dieses Angebot gelesen zu haben und mit allen Punkten einverstanden zu sein. Mit der Unterschrift bestätigen Sie, dass Sie mit den AGB's und der Offerte einverstanden sind.
+        </div>
+        <div className="signature-lines">
+          <div className="signature-field">
+            <div className="signature-label">Ort, Datum</div>
+            <div className="signature-line"></div>
+          </div>
+          <div className="signature-field">
+            <div className="signature-label">Unterschrift</div>
+            <div className="signature-line"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Page 1 Footer */}
+      <div className="page-footer">
+        <p className="footer-company">Umzug UNIT GmbH</p>
+        <p>Tel: 032 310 70 60 / 078 935 82 82 • E-Mail: info@umzug-unit.ch</p>
+      </div>
+
     </div>
   )
 }
