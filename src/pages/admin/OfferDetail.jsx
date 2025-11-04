@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { getOffer, updateOffer, getServiceCategories, getAllAdditionalServices } from '@/lib/supabase'
-import { ArrowLeft, Save, FileDown, Edit, X, Mail } from 'lucide-react'
+import { ArrowLeft, Save, FileDown, Edit, X, Mail, MoreVertical } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { sendOfferEmail } from '@/lib/email'
 
@@ -23,6 +23,7 @@ const OfferDetail = () => {
   const [showEmailDialog, setShowEmailDialog] = useState(false)
   const [recipientEmail, setRecipientEmail] = useState('')
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   useEffect(() => {
     loadOffer()
@@ -254,7 +255,9 @@ const OfferDetail = () => {
               <h1 className="text-3xl font-bold text-slate-900">Angebot {offer.offer_number}</h1>
               <p className="text-slate-600 mt-1">Erstellt von: {offer.created_by_name || 'N/A'}</p>
             </div>
-            <div className="flex gap-2">
+            
+            {/* Desktop buttons */}
+            <div className="hidden md:flex gap-2">
               {!editMode ? (
                 <>
                   <Button
@@ -299,6 +302,89 @@ const OfferDetail = () => {
                     <X className="mr-2 h-4 w-4" />
                     Abbrechen
                   </Button>
+                </>
+              )}
+            </div>
+
+            {/* Mobile dropdown menu */}
+            <div className="relative md:hidden">
+              <Button
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                className="bg-slate-700 hover:bg-slate-800 text-white"
+              >
+                <MoreVertical className="h-5 w-5" />
+              </Button>
+              
+              {showMobileMenu && (
+                <>
+                  {/* Backdrop */}
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={() => setShowMobileMenu(false)}
+                  />
+                  
+                  {/* Dropdown menu */}
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-slate-200 z-50 py-2">
+                    {!editMode ? (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditMode(true)
+                            setShowMobileMenu(false)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center text-slate-900"
+                        >
+                          <Edit className="mr-3 h-4 w-4" />
+                          Bearbeiten
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleOpenEmailDialog()
+                            setShowMobileMenu(false)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center text-slate-900"
+                        >
+                          <Mail className="mr-3 h-4 w-4" />
+                          Per E-Mail senden
+                        </button>
+                        <button
+                          onClick={() => {
+                            exportPDF()
+                            setShowMobileMenu(false)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center text-slate-900"
+                        >
+                          <FileDown className="mr-3 h-4 w-4" />
+                          PDF exportieren
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => {
+                            handleSave()
+                            setShowMobileMenu(false)
+                          }}
+                          disabled={saving}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center text-slate-900 disabled:opacity-50"
+                        >
+                          <Save className="mr-3 h-4 w-4" />
+                          {saving ? 'Speichert...' : 'Speichern'}
+                        </button>
+                        <button
+                          onClick={() => {
+                            setEditMode(false)
+                            loadOffer()
+                            setShowMobileMenu(false)
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-slate-50 flex items-center text-slate-900"
+                        >
+                          <X className="mr-3 h-4 w-4" />
+                          Abbrechen
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>
