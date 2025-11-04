@@ -1005,17 +1005,17 @@ const OfferDetail = () => {
       {showEmailDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-slate-900 mb-4">Offerte per E-Mail senden</h3>
+            <h3 className="text-xl font-bold text-black mb-4">Offerte per E-Mail senden</h3>
             <div className="mb-4">
-              <Label className="text-slate-900 font-medium mb-2">E-Mail-Adresse des Empfängers</Label>
+              <Label className="text-black font-medium mb-2 block">E-Mail-Adresse des Empfängers</Label>
               <Input
                 type="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
                 placeholder="kunde@beispiel.ch"
-                className="mt-2 text-black"
+                className="mt-2 text-black bg-white border-slate-300"
               />
-              <p className="text-sm text-slate-600 mt-2">
+              <p className="text-sm text-slate-700 mt-2">
                 Die Offerte wird als PDF-Link per E-Mail versendet.
               </p>
             </div>
@@ -1027,7 +1027,7 @@ const OfferDetail = () => {
                 }}
                 variant="outline"
                 disabled={sendingEmail}
-                className="border-slate-300 text-black hover:bg-slate-100"
+                className="border-slate-300 bg-white text-black hover:bg-slate-100"
               >
                 Abbrechen
               </Button>
