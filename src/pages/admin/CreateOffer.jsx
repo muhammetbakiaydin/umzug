@@ -30,6 +30,7 @@ const CreateOffer = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
   const [offerNumber, setOfferNumber] = useState('')
+  const [vatEnabled, setVatEnabled] = useState(true)
   
   const [formData, setFormData] = useState({
     // Offer Details
@@ -95,7 +96,10 @@ const CreateOffer = () => {
     
     // Load VAT rate from company settings
     const { data: settings } = await getCompanySettings()
-    if (settings && settings.vat_rate) setVatRate(settings.vat_rate)
+    if (settings) {
+      if (settings.vat_rate) setVatRate(settings.vat_rate)
+      if (settings.vat_enabled !== undefined) setVatEnabled(settings.vat_enabled)
+    }
     
     // Load customers
     const { data: custs } = await getCustomers()
@@ -816,13 +820,20 @@ const CreateOffer = () => {
                   <span>Zwischensumme:</span>
                   <span className="font-mono">{formatCurrency(formData.flatRatePrice)}</span>
                 </div>
-                <div className="flex justify-between text-lg">
-                  <span>MwSt. ({vatRate}%):</span>
-                  <span className="font-mono">{formatCurrency((formData.flatRatePrice * vatRate) / 100)}</span>
-                </div>
+                {vatEnabled && (
+                  <div className="flex justify-between text-lg">
+                    <span>MwSt. ({vatRate}%):</span>
+                    <span className="font-mono">{formatCurrency((formData.flatRatePrice * vatRate) / 100)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-xl text-slate-900 border-t border-slate-200 pt-3">
                   <span>Total:</span>
-                  <span className="font-mono text-brand-primary">{formatCurrency(formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100)}</span>
+                  <span className="font-mono text-brand-primary">
+                    {formatCurrency(vatEnabled 
+                      ? formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100
+                      : formData.flatRatePrice
+                    )}
+                  </span>
                 </div>
               </div>
             </div>

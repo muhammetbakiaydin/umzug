@@ -78,7 +78,8 @@ const SettingsPage = () => {
   const handleSaveVat = async () => {
     const { error } = await updateCompanySettings({
       id: companySettings.id,
-      vat_rate: parseFloat(vatRate)
+      vat_rate: parseFloat(vatRate),
+      vat_enabled: companySettings.vat_enabled
     })
     
     if (error) {
@@ -87,6 +88,21 @@ const SettingsPage = () => {
       toast.success('MwSt. erfolgreich aktualisiert')
       setCompanySettings({ ...companySettings, vat_rate: parseFloat(vatRate) })
       setEditingVat(false)
+    }
+  }
+
+  const handleToggleVat = async () => {
+    const newStatus = !companySettings.vat_enabled
+    const { error } = await updateCompanySettings({
+      id: companySettings.id,
+      vat_enabled: newStatus
+    })
+    
+    if (error) {
+      toast.error('Fehler beim Aktualisieren des Status')
+    } else {
+      toast.success(newStatus ? 'MwSt. aktiviert' : 'MwSt. deaktiviert')
+      setCompanySettings({ ...companySettings, vat_enabled: newStatus })
     }
   }
 
@@ -715,6 +731,33 @@ const SettingsPage = () => {
             <h2 className="text-lg font-semibold text-slate-900 mb-6">Mehrwertsteuersatz verwalten</h2>
             
             <div className="max-w-md">
+              {/* Active/Inactive Toggle */}
+              <div className="mb-6 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-black font-medium">MwSt. Status</Label>
+                    <p className="text-sm text-slate-700 mt-1">
+                      {companySettings.vat_enabled 
+                        ? 'MwSt. wird in Angeboten angezeigt' 
+                        : 'MwSt. wird in Angeboten ausgeblendet'}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`px-3 py-1 rounded text-sm font-medium ${
+                      companySettings.vat_enabled 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {companySettings.vat_enabled ? 'Aktiv' : 'Inaktiv'}
+                    </span>
+                    <Switch
+                      checked={companySettings.vat_enabled}
+                      onCheckedChange={handleToggleVat}
+                    />
+                  </div>
+                </div>
+              </div>
+
               <div className="mb-4">
                 <Label className="text-black">MwSt. Satz (%)</Label>
                 {editingVat ? (
