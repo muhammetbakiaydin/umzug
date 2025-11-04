@@ -5,8 +5,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { getOffer, updateOffer, getServiceCategories, getAllAdditionalServices } from '@/lib/supabase'
-import { ArrowLeft, Save, FileDown, Edit, X } from 'lucide-react'
+import { ArrowLeft, Save, FileDown, Edit, X, Mail } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { sendOfferEmail } from '@/lib/email'
 
 const OfferDetail = () => {
   const navigate = useNavigate()
@@ -19,6 +20,9 @@ const OfferDetail = () => {
   const [services, setServices] = useState([])
   const [additionalServices, setAdditionalServices] = useState([])
   const [formData, setFormData] = useState({})
+  const [showEmailDialog, setShowEmailDialog] = useState(false)
+  const [recipientEmail, setRecipientEmail] = useState('')
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   useEffect(() => {
     loadOffer()
@@ -198,6 +202,32 @@ const OfferDetail = () => {
     }
   }
 
+  const handleOpenEmailDialog = () => {
+    setRecipientEmail(offer?.from_email || '')
+    setShowEmailDialog(true)
+  }
+
+  const handleSendEmail = async () => {
+    if (!recipientEmail || !recipientEmail.includes('@')) {
+      toast.error('Bitte geben Sie eine gültige E-Mail-Adresse ein')
+      return
+    }
+
+    setSendingEmail(true)
+    
+    try {
+      await sendOfferEmail(offer, recipientEmail)
+      toast.success(`Offerte erfolgreich an ${recipientEmail} gesendet!`)
+      setShowEmailDialog(false)
+      setRecipientEmail('')
+    } catch (error) {
+      console.error('Email send error:', error)
+      toast.error('Fehler beim Versenden der E-Mail: ' + error.message)
+    } finally {
+      setSendingEmail(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -233,6 +263,13 @@ const OfferDetail = () => {
                   >
                     <Edit className="mr-2 h-4 w-4" />
                     Bearbeiten
+                  </Button>
+                  <Button
+                    onClick={handleOpenEmailDialog}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <Mail className="mr-2 h-4 w-4" />
+                    Per E-Mail senden
                   </Button>
                   <Button
                     onClick={exportPDF}
@@ -963,6 +1000,49 @@ const OfferDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Email Dialog */}
+      {showEmailDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-slate-900 mb-4">Offerte per E-Mail senden</h3>
+            <div className="mb-4">
+              <Label className="text-slate-900 font-medium mb-2">E-Mail-Adresse des Empfängers</Label>
+              <Input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="kunde@beispiel.ch"
+                className="mt-2 text-black"
+              />
+              <p className="text-sm text-slate-600 mt-2">
+                Die Offerte wird als PDF-Link per E-Mail versendet.
+              </p>
+            </div>
+            <div className="flex gap-3 justify-end">
+              <Button
+                onClick={() => {
+                  setShowEmailDialog(false)
+                  setRecipientEmail('')
+                }}
+                variant="outline"
+                disabled={sendingEmail}
+                className="border-slate-300 text-black hover:bg-slate-100"
+              >
+                Abbrechen
+              </Button>
+              <Button
+                onClick={handleSendEmail}
+                disabled={sendingEmail}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Mail className="mr-2 h-4 w-4" />
+                {sendingEmail ? 'Wird gesendet...' : 'E-Mail senden'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
