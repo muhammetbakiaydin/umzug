@@ -26,6 +26,9 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/terms" element={<Terms />} />
+            
+            {/* Public PDF Print Route - accessible without login */}
+            <Route path="/admin/offers/:id/print" element={<OfferPrint />} />
 
             {/* Redirect homepage to login */}
             <Route path="/" element={<Navigate to="/admin/login" replace />} />
@@ -71,14 +74,6 @@ function App() {
                   <AdminLayout>
                     <OfferDetail />
                   </AdminLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin/offers/:id/print"
-              element={
-                <ProtectedRoute>
-                  <OfferPrint />
                 </ProtectedRoute>
               }
             />

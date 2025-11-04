@@ -11,7 +11,31 @@ To apply database migrations to your Supabase project:
 5. Paste it into the SQL Editor
 6. Click **Run** to execute the migration
 
-## Latest Migration
+## Latest Migrations
+
+### ⚠️ IMPORTANT: 20241105_allow_public_offer_read.sql
+
+**Purpose:** Allows customers to view offer PDFs via email link without logging in.
+
+This migration adds Row Level Security (RLS) policies that allow public read access to:
+- `offers` table (for viewing PDF details)
+- `company_settings` table (for VAT settings)
+
+**Why this is needed:** When you send an offer PDF to a customer via email, they need to be able to view it without creating an account or logging in. This migration enables that while keeping all write operations (create, update, delete) protected.
+
+**Security:** Only SELECT (read) operations are allowed publicly. All modifications still require authentication.
+
+**Status:** ⚠️ MUST BE APPLIED for email PDF links to work!
+
+### 20241104_add_vat_enabled.sql
+
+This migration adds a VAT toggle feature to control whether VAT is displayed on offers.
+
+**Changes:**
+- Adds `vat_enabled` BOOLEAN column to `company_settings` table
+- Defaults to `true` (VAT shown)
+
+**Status:** ⚠️ Needs to be applied for VAT toggle feature
 
 ### add_additional_services_price.sql
 
@@ -21,11 +45,7 @@ This migration adds a `price` field to the `additional_services` table to store 
 - Adds `price` DECIMAL(10,2) column with default value 0.00
 - Sets default price for all existing services to 0.00
 
-**To apply this migration:**
-1. Open the file: `supabase/migrations/add_additional_services_price.sql`
-2. Copy the SQL content
-3. Run it in Supabase SQL Editor
-
 ## Note
 
 You need to manually run each migration file in the Supabase SQL Editor to apply changes to your database.
+
