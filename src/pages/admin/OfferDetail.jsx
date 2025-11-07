@@ -1007,7 +1007,14 @@ const OfferDetail = () => {
             </div>
             <div className="px-6 py-5 space-y-5">
               {additionalServices.map((service) => {
-                const fieldName = `extra${service.name.replace(/\s+/g, '')}`
+                // Map service names to correct form field names
+                const fieldNameMap = {
+                  'Reinigung': 'extraCleaning',
+                  'Entsorgung': 'extraDisposal',
+                  'Verpackungsservice': 'extraPacking'
+                }
+                const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+                
                 return (
                   <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
                     <div className="flex-1">
@@ -1031,7 +1038,7 @@ const OfferDetail = () => {
                         className="w-5 h-5 rounded border-slate-300 text-brand-primary"
                       />
                     ) : (
-                      <span className="text-slate-700">{(formData[fieldName] || offer[`extra_${service.name.toLowerCase().replace(/\s+/g, '_')}`]) ? 'Ja' : 'Nein'}</span>
+                      <span className="text-slate-700">{formData[fieldName] ? 'Ja' : 'Nein'}</span>
                     )}
                   </div>
                 )

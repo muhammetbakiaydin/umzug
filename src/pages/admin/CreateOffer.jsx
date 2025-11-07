@@ -762,7 +762,14 @@ const CreateOffer = () => {
             </div>
             <div className="px-6 py-5 space-y-4">
               {additionalServices.map((service) => {
-                const fieldName = `extra${service.name.replace(/\s+/g, '')}`
+                // Map service names to correct form field names
+                const fieldNameMap = {
+                  'Reinigung': 'extraCleaning',
+                  'Entsorgung': 'extraDisposal',
+                  'Verpackungsservice': 'extraPacking'
+                }
+                const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+                
                 return (
                   <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
                     <div className="flex-1">
