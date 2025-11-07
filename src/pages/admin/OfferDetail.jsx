@@ -78,20 +78,26 @@ const OfferDetail = () => {
       fromPhone: data.from_phone || '',
       fromEmail: data.from_email || '',
       fromElevator: data.from_elevator || false,
+      fromFloor: data.from_floor || 0,
       
       toStreet: data.to_street || '',
       toZip: data.to_zip || '',
       toCity: data.to_city || '',
       toElevator: data.to_elevator || false,
+      toFloor: data.to_floor || 0,
       
       movingDate: data.moving_date || '',
       startTime: data.start_time || '',
       cleaningDate: data.cleaning_date || '',
       cleaningStartTime: data.cleaning_start_time || '',
       object: data.object_description || '',
+      objectType: data.object_type || 'Wohnung',
+      roomCount: data.room_count || 3,
       
       trucks: data.trucks || 1,
       workers: data.workers || 2,
+      hasTrailer: data.has_trailer || false,
+      hasSprinter: data.has_sprinter || false,
       boxesNote: data.boxes_note || '20 Umzugskisten Kostenlos zur Verfügung',
       assemblyNote: data.assembly_note || 'Inkl. De/Montage',
       flatRatePrice: data.flat_rate_price || 0,
@@ -128,20 +134,26 @@ const OfferDetail = () => {
         from_phone: formData.fromPhone,
         from_email: formData.fromEmail,
         from_elevator: formData.fromElevator,
+        from_floor: parseInt(formData.fromFloor) || 0,
         
         to_street: formData.toStreet,
         to_zip: formData.toZip,
         to_city: formData.toCity,
         to_elevator: formData.toElevator,
+        to_floor: parseInt(formData.toFloor) || 0,
         
         moving_date: formData.movingDate,
         start_time: formData.startTime,
         cleaning_date: formData.cleaningDate || null,
         cleaning_start_time: formData.cleaningStartTime || null,
         object_description: formData.object,
+        object_type: formData.objectType,
+        room_count: parseInt(formData.roomCount) || 3,
         
         trucks: formData.trucks,
         workers: formData.workers,
+        has_trailer: formData.hasTrailer,
+        has_sprinter: formData.hasSprinter,
         boxes_note: formData.boxesNote,
         assembly_note: formData.assemblyNote,
         flat_rate_price: formData.flatRatePrice,
@@ -729,6 +741,26 @@ const OfferDetail = () => {
                   </span>
                 )}
               </div>
+
+              <div>
+                <Label className="text-slate-700">Etage *</Label>
+                {editMode ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.fromFloor}
+                    onChange={(e) => handleChange('fromFloor', parseInt(e.target.value) || 0)}
+                  />
+                ) : (
+                  <Input
+                    className="bg-slate-50 border-slate-200 text-slate-600"
+                    value={offer.from_floor || 0}
+                    readOnly
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -808,6 +840,26 @@ const OfferDetail = () => {
                   <span className="text-slate-700">
                     Lift vorhanden: {offer.to_elevator ? 'Ja' : 'Nein'}
                   </span>
+                )}
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Etage *</Label>
+                {editMode ? (
+                  <Input
+                    type="number"
+                    min="0"
+                    max="50"
+                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                    value={formData.toFloor}
+                    onChange={(e) => handleChange('toFloor', parseInt(e.target.value) || 0)}
+                  />
+                ) : (
+                  <Input
+                    className="bg-slate-50 border-slate-200 text-slate-600"
+                    value={offer.to_floor || 0}
+                    readOnly
+                  />
                 )}
               </div>
             </div>
@@ -894,12 +946,91 @@ const OfferDetail = () => {
               </div>
 
               <div>
-                <Label className="text-slate-700">Objekt</Label>
+                <Label className="text-slate-700">Objekttyp *</Label>
+                {editMode ? (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('objectType', 'Wohnung')}
+                      className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
+                        formData.objectType === 'Wohnung'
+                          ? 'border-brand-primary bg-brand-primary text-white'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-primary/50'
+                      }`}
+                    >
+                      Wohnung
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('objectType', 'Haus')}
+                      className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
+                        formData.objectType === 'Haus'
+                          ? 'border-brand-primary bg-brand-primary text-white'
+                          : 'border-slate-200 bg-white text-slate-700 hover:border-brand-primary/50'
+                      }`}
+                    >
+                      Haus
+                    </button>
+                  </div>
+                ) : (
+                  <Input
+                    className="bg-slate-50 border-slate-200 text-slate-600"
+                    value={offer.object_type || 'Wohnung'}
+                    readOnly
+                  />
+                )}
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Anzahl Zimmer *</Label>
+                {editMode ? (
+                  <div className="flex items-center gap-3 mt-2">
+                    <button
+                      type="button"
+                      onClick={() => handleChange('roomCount', Math.max(1, formData.roomCount - 1))}
+                      className="w-10 h-10 rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:border-brand-primary hover:text-brand-primary font-bold text-xl"
+                    >
+                      −
+                    </button>
+                    <div className="flex-1 text-center">
+                      <Input
+                        type="number"
+                        min="1"
+                        max="10"
+                        className="bg-white border-slate-200 text-slate-900 text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                        value={formData.roomCount}
+                        onChange={(e) => {
+                          const val = parseInt(e.target.value) || 1
+                          handleChange('roomCount', Math.max(1, Math.min(10, val)))
+                        }}
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleChange('roomCount', Math.min(10, formData.roomCount + 1))}
+                      className="w-10 h-10 rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:border-brand-primary hover:text-brand-primary font-bold text-xl"
+                    >
+                      +
+                    </button>
+                  </div>
+                ) : (
+                  <Input
+                    className="bg-slate-50 border-slate-200 text-slate-600"
+                    value={offer.room_count || 3}
+                    readOnly
+                  />
+                )}
+                {editMode && <p className="text-xs text-slate-600 mt-1">Zwischen 1 und 10 Zimmer</p>}
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Zusätzliche Objektbeschreibung (optional)</Label>
                 {editMode ? (
                   <Input
                     className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     value={formData.object}
                     onChange={(e) => handleChange('object', e.target.value)}
+                    placeholder='z.B. "Mit Balkon, Einbauküche, etc."'
                   />
                 ) : (
                   <Input
@@ -953,6 +1084,49 @@ const OfferDetail = () => {
                       value={offer.workers || 0}
                       readOnly
                     />
+                  )}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  {editMode ? (
+                    <>
+                      <input
+                        type="checkbox"
+                        id="hasTrailer"
+                        className="w-5 h-5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                        checked={formData.hasTrailer}
+                        onChange={(e) => handleChange('hasTrailer', e.target.checked)}
+                      />
+                      <Label htmlFor="hasTrailer" className="text-slate-700 font-medium cursor-pointer">
+                        Anhänger
+                      </Label>
+                    </>
+                  ) : (
+                    <span className="text-slate-700">
+                      Anhänger: {offer.has_trailer ? 'Ja' : 'Nein'}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  {editMode ? (
+                    <>
+                      <input
+                        type="checkbox"
+                        id="hasSprinter"
+                        className="w-5 h-5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                        checked={formData.hasSprinter}
+                        onChange={(e) => handleChange('hasSprinter', e.target.checked)}
+                      />
+                      <Label htmlFor="hasSprinter" className="text-slate-700 font-medium cursor-pointer">
+                        Sprinter
+                      </Label>
+                    </>
+                  ) : (
+                    <span className="text-slate-700">
+                      Sprinter: {offer.has_sprinter ? 'Ja' : 'Nein'}
+                    </span>
                   )}
                 </div>
               </div>

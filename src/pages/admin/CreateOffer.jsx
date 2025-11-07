@@ -716,12 +716,74 @@ const CreateOffer = () => {
               </div>
 
               <div>
-                <Label className="text-slate-700">Objekt</Label>
+                <Label className="text-slate-700">Objekttyp *</Label>
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleChange('objectType', 'Wohnung')}
+                    className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
+                      formData.objectType === 'Wohnung'
+                        ? 'border-brand-primary bg-brand-primary text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-brand-primary/50'
+                    }`}
+                  >
+                    Wohnung
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChange('objectType', 'Haus')}
+                    className={`flex-1 px-4 py-2 rounded-lg border-2 font-medium transition-colors ${
+                      formData.objectType === 'Haus'
+                        ? 'border-brand-primary bg-brand-primary text-white'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-brand-primary/50'
+                    }`}
+                  >
+                    Haus
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Anzahl Zimmer *</Label>
+                <div className="flex items-center gap-3 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleChange('roomCount', Math.max(1, formData.roomCount - 1))}
+                    className="w-10 h-10 rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:border-brand-primary hover:text-brand-primary font-bold text-xl"
+                  >
+                    −
+                  </button>
+                  <div className="flex-1 text-center">
+                    <Input
+                      type="number"
+                      min="1"
+                      max="10"
+                      className="bg-white border-slate-200 text-slate-900 text-center text-lg font-semibold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                      value={formData.roomCount}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value) || 1
+                        handleChange('roomCount', Math.max(1, Math.min(10, val)))
+                      }}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleChange('roomCount', Math.min(10, formData.roomCount + 1))}
+                    className="w-10 h-10 rounded-lg border-2 border-slate-200 bg-white text-slate-700 hover:border-brand-primary hover:text-brand-primary font-bold text-xl"
+                  >
+                    +
+                  </button>
+                </div>
+                <p className="text-xs text-slate-600 mt-1">Zwischen 1 und 10 Zimmer</p>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Zusätzliche Objektbeschreibung (optional)</Label>
                 <Input
                   className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                   value={formData.object}
                   onChange={(e) => handleChange('object', e.target.value)}
-                  placeholder='z.B. "2.5 Zimmer-Haus mit 4+ Etagen, 56m² (Etage 0)"'
+                  placeholder='z.B. "Mit Balkon, Einbauküche, etc."'
                 />
               </div>
             </div>
@@ -753,6 +815,33 @@ const CreateOffer = () => {
                     value={formData.workers}
                     onChange={(e) => handleChange('workers', parseInt(e.target.value) || 0)}
                   />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="flex items-center space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <input
+                    type="checkbox"
+                    id="hasTrailer"
+                    className="w-5 h-5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                    checked={formData.hasTrailer}
+                    onChange={(e) => handleChange('hasTrailer', e.target.checked)}
+                  />
+                  <Label htmlFor="hasTrailer" className="text-slate-700 font-medium cursor-pointer">
+                    Anhänger
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                  <input
+                    type="checkbox"
+                    id="hasSprinter"
+                    className="w-5 h-5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                    checked={formData.hasSprinter}
+                    onChange={(e) => handleChange('hasSprinter', e.target.checked)}
+                  />
+                  <Label htmlFor="hasSprinter" className="text-slate-700 font-medium cursor-pointer">
+                    Sprinter
+                  </Label>
                 </div>
               </div>
 
