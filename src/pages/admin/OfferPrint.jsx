@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getOffer } from '@/lib/supabase'
+import { getOffer, getCompanySettings } from '@/lib/supabase'
 
 const OfferPrint = () => {
   const { id } = useParams()
   const [offer, setOffer] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [vatEnabled, setVatEnabled] = useState(true)
 
   useEffect(() => {
     loadOffer()
+    loadSettings()
   }, [id])
 
   useEffect(() => {
@@ -32,6 +34,13 @@ const OfferPrint = () => {
       setOffer(data)
     }
     setLoading(false)
+  }
+
+  const loadSettings = async () => {
+    const { data } = await getCompanySettings()
+    if (data) {
+      setVatEnabled(data.vat_enabled !== false) // Default to true if not set
+    }
   }
 
   const formatCurrency = (value) => {
@@ -589,8 +598,12 @@ const OfferPrint = () => {
 
       {/* Grand total */}
       <div className="grand-total no-break">
-        <span className="total-label">Total:</span>
-        <span className="total-amount">{formatCurrency((offer.flat_rate_price || 0) * 1.077)}</span>
+        <span className="total-label">
+          Total {vatEnabled ? '(inkl. 7.7% MwSt.)' : ''}:
+        </span>
+        <span className="total-amount">
+          {formatCurrency(vatEnabled ? (offer.flat_rate_price || 0) * 1.077 : (offer.flat_rate_price || 0))}
+        </span>
       </div>
 
       {/* Page 1 Footer */}
