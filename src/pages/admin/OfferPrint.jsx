@@ -495,7 +495,7 @@ const OfferPrint = () => {
         
         <div className="location-block">
           <div className="location-title">Aktueller Standort:</div>
-          <div>Meter zur Ladekante, Lift: {yesNo(offer.from_elevator)}</div>
+          <div>Etage: {offer.from_floor || 0}, Lift: {yesNo(offer.from_elevator)}</div>
           <div>{offer.from_salutation} {offer.from_first_name} {offer.from_last_name}</div>
           <div>{offer.from_street}</div>
           <div>{offer.from_zip} {offer.from_city}</div>
@@ -505,7 +505,7 @@ const OfferPrint = () => {
         
         <div className="location-block">
           <div className="location-title">Neuer Standort:</div>
-          <div>Meter zur Ladekante, Lift: {yesNo(offer.to_elevator)}</div>
+          <div>Etage: {offer.to_floor || 0}, Lift: {yesNo(offer.to_elevator)}</div>
           <div>{offer.to_street || '—'}</div>
           <div>{offer.to_zip} {offer.to_city}</div>
         </div>
@@ -543,9 +543,15 @@ const OfferPrint = () => {
           <div className="kv-value">—</div>
         </div>
         <div className="kv-row">
-          <div className="kv-label">Objekt:</div>
-          <div className="kv-value">{offer.object_description || '—'}</div>
+          <div className="kv-label">Objekttyp:</div>
+          <div className="kv-value">{offer.object_type || 'Wohnung'} ({offer.room_count || 3} Zimmer)</div>
         </div>
+        {offer.object_description && (
+          <div className="kv-row">
+            <div className="kv-label">Zusätzliche Objektbeschreibung:</div>
+            <div className="kv-value">{offer.object_description}</div>
+          </div>
+        )}
       </div>
 
       {/* Umzug table */}
@@ -564,6 +570,16 @@ const OfferPrint = () => {
             <td>Umzugsmitarbeiter: {offer.workers || 0}</td>
             <td></td>
           </tr>
+          {(offer.has_trailer || offer.has_sprinter) && (
+            <tr>
+              <td>
+                {offer.has_trailer && <span>✓ Anhänger</span>}
+                {offer.has_trailer && offer.has_sprinter && <span> | </span>}
+                {offer.has_sprinter && <span>✓ Sprinter</span>}
+              </td>
+              <td></td>
+            </tr>
+          )}
           <tr>
             <td>{offer.boxes_note || '20 Umzugskisten Kostenlos zur Verfügung'}</td>
             <td>{offer.assembly_note || 'Inkl. De/Montage'}</td>
