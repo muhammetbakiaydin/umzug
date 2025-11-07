@@ -57,7 +57,7 @@ const OfferPrint = () => {
       // Find the cleaning service price
       const cleaningService = services.find(s => s.name === 'Reinigung' || s.name.toLowerCase().includes('reinigung'))
       console.log('Cleaning service found:', cleaningService)
-      if (cleaningService && cleaningService.price) {
+      if (cleaningService && cleaningService.price !== null && cleaningService.price !== undefined) {
         console.log('Setting cleaning price to:', cleaningService.price)
         setCleaningPrice(Number(cleaningService.price))
       } else {
