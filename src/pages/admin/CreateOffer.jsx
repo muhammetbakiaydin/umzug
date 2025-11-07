@@ -51,12 +51,14 @@ const CreateOffer = () => {
     fromPhone: '',
     fromEmail: '',
     fromElevator: false,
+    fromFloor: '',
     
     // New Address (Neuer Standort)
     toStreet: '',
     toZip: '',
     toCity: '',
     toElevator: false,
+    toFloor: '',
     
     // Move Details (Umzugsdetails)
     movingDate: '',
@@ -64,10 +66,14 @@ const CreateOffer = () => {
     cleaningDate: '',
     cleaningStartTime: '',
     object: '',
+    objectType: 'Wohnung',
+    roomCount: 3,
     
     // Move Services (Umzugsleistungen)
     trucks: 1,
     workers: 2,
+    hasTrailer: false,
+    hasSprinter: false,
     boxesNote: '20 Umzugskisten Kostenlos zur Verfügung',
     assemblyNote: 'Inkl. De/Montage',
     flatRatePrice: 0,
@@ -237,12 +243,14 @@ const CreateOffer = () => {
         from_phone: formData.fromPhone,
         from_email: formData.fromEmail,
         from_elevator: formData.fromElevator,
+        from_floor: formData.fromFloor ? parseInt(formData.fromFloor) : null,
         
         // New address
         to_street: formData.toStreet,
         to_zip: formData.toZip,
         to_city: formData.toCity,
         to_elevator: formData.toElevator,
+        to_floor: formData.toFloor ? parseInt(formData.toFloor) : null,
         
         // Move details
         moving_date: formData.movingDate,
@@ -250,10 +258,14 @@ const CreateOffer = () => {
         cleaning_date: formData.cleaningDate || null,
         cleaning_start_time: formData.cleaningStartTime || null,
         object_description: formData.object,
+        object_type: formData.objectType,
+        room_count: formData.roomCount,
         
         // Move services
         trucks: formData.trucks,
         workers: formData.workers,
+        has_trailer: formData.hasTrailer,
+        has_sprinter: formData.hasSprinter,
         boxes_note: formData.boxesNote,
         assembly_note: formData.assemblyNote,
         flat_rate_price: formData.flatRatePrice,
@@ -550,6 +562,20 @@ const CreateOffer = () => {
                 </div>
               </div>
 
+              <div>
+                <Label className="text-slate-700">Etage *</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="50"
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.fromFloor}
+                  onChange={(e) => handleChange('fromFloor', e.target.value)}
+                  required
+                  placeholder="z.B. 2"
+                />
+              </div>
+
               <div className="flex items-center space-x-3 bg-slate-50 p-4 rounded-lg">
                 <input
                   type="checkbox"
@@ -603,6 +629,20 @@ const CreateOffer = () => {
                   onChange={(e) => handleChange('toCity', e.target.value)}
                   required
                   placeholder="z.B. Muttenz"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Etage *</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="50"
+                  className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.toFloor}
+                  onChange={(e) => handleChange('toFloor', e.target.value)}
+                  required
+                  placeholder="z.B. 3"
                 />
               </div>
 
