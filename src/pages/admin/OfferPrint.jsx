@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getOffer, getCompanySettings } from '@/lib/supabase'
+import { getOffer, getCompanySettings, getAllAdditionalServices } from '@/lib/supabase'
 
 const OfferPrint = () => {
   const { id } = useParams()
   const [offer, setOffer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [vatEnabled, setVatEnabled] = useState(true)
+  const [cleaningPrice, setCleaningPrice] = useState(900)
 
   useEffect(() => {
     loadOffer()
     loadSettings()
+    loadAdditionalServices()
   }, [id])
 
   useEffect(() => {
@@ -31,6 +33,11 @@ const OfferPrint = () => {
     const { data, error } = await getOffer(id)
     
     if (!error && data) {
+      console.log('Offer data loaded:', {
+        extra_cleaning: data.extra_cleaning,
+        extra_disposal: data.extra_disposal,
+        extra_packing: data.extra_packing
+      })
       setOffer(data)
     }
     setLoading(false)
@@ -40,6 +47,17 @@ const OfferPrint = () => {
     const { data } = await getCompanySettings()
     if (data) {
       setVatEnabled(data.vat_enabled !== false) // Default to true if not set
+    }
+  }
+
+  const loadAdditionalServices = async () => {
+    const { data: services } = await getAllAdditionalServices()
+    if (services) {
+      // Find the cleaning service price
+      const cleaningService = services.find(s => s.name === 'Reinigung' || s.name.toLowerCase().includes('reinigung'))
+      if (cleaningService && cleaningService.price) {
+        setCleaningPrice(Number(cleaningService.price))
+      }
     }
   }
 
@@ -472,7 +490,7 @@ const OfferPrint = () => {
         
         <div className="location-block">
           <div className="location-title">Aktueller Standort:</div>
-          <div>__ Meter zur Ladekante, Lift: {yesNo(offer.from_elevator)}</div>
+          <div>Meter zur Ladekante, Lift: {yesNo(offer.from_elevator)}</div>
           <div>{offer.from_salutation} {offer.from_first_name} {offer.from_last_name}</div>
           <div>{offer.from_street}</div>
           <div>{offer.from_zip} {offer.from_city}</div>
@@ -482,7 +500,7 @@ const OfferPrint = () => {
         
         <div className="location-block">
           <div className="location-title">Neuer Standort:</div>
-          <div>__ Meter zur Ladekante, Lift: {yesNo(offer.to_elevator)}</div>
+          <div>Meter zur Ladekante, Lift: {yesNo(offer.to_elevator)}</div>
           <div>{offer.to_street || '—'}</div>
           <div>{offer.to_zip} {offer.to_city}</div>
         </div>
@@ -592,7 +610,7 @@ const OfferPrint = () => {
           </div>
         </div>
         <div className="cleaning-price">
-          Pauschalpreis Reinigung: {formatCurrency(900)}
+          Pauschalpreis Reinigung: {formatCurrency(cleaningPrice)}
         </div>
       </div>
 
