@@ -52,11 +52,16 @@ const OfferPrint = () => {
 
   const loadAdditionalServices = async () => {
     const { data: services } = await getAllAdditionalServices()
+    console.log('All additional services:', services)
     if (services) {
       // Find the cleaning service price
       const cleaningService = services.find(s => s.name === 'Reinigung' || s.name.toLowerCase().includes('reinigung'))
+      console.log('Cleaning service found:', cleaningService)
       if (cleaningService && cleaningService.price) {
+        console.log('Setting cleaning price to:', cleaningService.price)
         setCleaningPrice(Number(cleaningService.price))
+      } else {
+        console.log('No cleaning service or price found, using default 900')
       }
     }
   }
