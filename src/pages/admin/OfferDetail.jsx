@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
-import { getOffer, updateOffer, getServiceCategories, getAllAdditionalServices } from '@/lib/supabase'
+import { getOffer, updateOffer, getServiceCategories, getAllAdditionalServices, getCompanySettings } from '@/lib/supabase'
 import { ArrowLeft, Save, FileDown, Edit, X, Mail, MoreVertical } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { sendOfferEmail } from '@/lib/email'
@@ -24,11 +24,14 @@ const OfferDetail = () => {
   const [recipientEmail, setRecipientEmail] = useState('')
   const [sendingEmail, setSendingEmail] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [vatEnabled, setVatEnabled] = useState(true)
+  const [vatRate, setVatRate] = useState(7.7)
 
   useEffect(() => {
     loadOffer()
     loadServices()
     loadAdditionalServices()
+    loadCompanySettings()
   }, [id])
 
   const loadServices = async () => {
@@ -39,6 +42,14 @@ const OfferDetail = () => {
   const loadAdditionalServices = async () => {
     const { data: addServices } = await getAllAdditionalServices()
     if (addServices) setAdditionalServices(addServices.filter(s => s.active))
+  }
+
+  const loadCompanySettings = async () => {
+    const { data: settings } = await getCompanySettings()
+    if (settings) {
+      setVatEnabled(settings.vat_enabled !== false)
+      if (settings.vat_rate) setVatRate(settings.vat_rate)
+    }
   }
 
   const loadOffer = async () => {
@@ -140,9 +151,11 @@ const OfferDetail = () => {
         extra_packing: formData.extraPacking,
         
         subtotal: formData.flatRatePrice,
-        tax_rate: 7.7,
-        tax_amount: (formData.flatRatePrice * 7.7) / 100,
-        total: formData.flatRatePrice + (formData.flatRatePrice * 7.7) / 100,
+        tax_rate: vatEnabled ? vatRate : 0,
+        tax_amount: vatEnabled ? (formData.flatRatePrice * vatRate) / 100 : 0,
+        total: vatEnabled 
+          ? formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100
+          : formData.flatRatePrice,
         
         notes: formData.notes,
       }
@@ -1078,14 +1091,19 @@ const OfferDetail = () => {
                   <span>Zwischensumme:</span>
                   <span className="font-mono">{formatCurrency(editMode ? formData.flatRatePrice : offer.flat_rate_price || 0)}</span>
                 </div>
-                <div className="flex justify-between text-lg">
-                  <span>MwSt. (7.7%):</span>
-                  <span className="font-mono">{formatCurrency((editMode ? formData.flatRatePrice : offer.flat_rate_price || 0) * 7.7 / 100)}</span>
-                </div>
+                {vatEnabled && (
+                  <div className="flex justify-between text-lg">
+                    <span>MwSt. ({vatRate}%):</span>
+                    <span className="font-mono">{formatCurrency((editMode ? formData.flatRatePrice : offer.flat_rate_price || 0) * vatRate / 100)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-xl text-slate-900 border-t border-slate-200 pt-3">
                   <span>Total:</span>
                   <span className="font-mono text-brand-primary">
-                    {formatCurrency((editMode ? formData.flatRatePrice : offer.flat_rate_price || 0) * 1.077)}
+                    {formatCurrency(vatEnabled 
+                      ? (editMode ? formData.flatRatePrice : offer.flat_rate_price || 0) * (1 + vatRate / 100)
+                      : (editMode ? formData.flatRatePrice : offer.flat_rate_price || 0)
+                    )}
                   </span>
                 </div>
               </div>
