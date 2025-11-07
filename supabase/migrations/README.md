@@ -11,9 +11,20 @@ To apply database migrations to your Supabase project:
 5. Paste it into the SQL Editor
 6. Click **Run** to execute the migration
 
-## Latest Migrations
+## ⚠️ URGENT Migrations (Must Run Now!)
 
-### ⚠️ IMPORTANT: 20241105_allow_public_offer_read.sql
+### 🔴 20241108_add_missing_columns.sql
+**Error it fixes:** `Could not find the 'base_price' column of 'service_categories'`
+
+This migration adds missing columns to the `service_categories` table:
+- `description` - Service category description
+- `pricing_model` - Pricing type (hourly, fixed, custom)
+- `hourly_rate` - Hourly rate for services
+- `base_price` - Base price for fixed-rate services
+
+**Status:** ⚠️ MUST BE APPLIED NOW! Settings page won't work without this.
+
+### ⚠️ 20241105_allow_public_offer_read.sql
 
 **Purpose:** Allows customers to view offer PDFs via email link without logging in.
 
@@ -26,6 +37,8 @@ This migration adds Row Level Security (RLS) policies that allow public read acc
 **Security:** Only SELECT (read) operations are allowed publicly. All modifications still require authentication.
 
 **Status:** ⚠️ MUST BE APPLIED for email PDF links to work!
+
+## Latest Migrations
 
 ### 20241104_add_vat_enabled.sql
 
