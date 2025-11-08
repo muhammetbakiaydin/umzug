@@ -576,10 +576,6 @@ const OfferPrint = () => {
           <div className="kv-value">{offer.cleaning_start_time ? formatTime(offer.cleaning_start_time) : 'offen'}</div>
         </div>
         <div className="kv-row">
-          <div className="kv-label">Abgabe:</div>
-          <div className="kv-value">—</div>
-        </div>
-        <div className="kv-row">
           <div className="kv-label">Objekttyp:</div>
           <div className="kv-value">{offer.object_type || 'Wohnung'} ({offer.room_count || 3} Zimmer)</div>
         </div>
