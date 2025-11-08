@@ -7,7 +7,10 @@ const OfferPrint = () => {
   const [offer, setOffer] = useState(null)
   const [loading, setLoading] = useState(true)
   const [vatEnabled, setVatEnabled] = useState(true)
+  const [vatRate, setVatRate] = useState(7.7)
   const [cleaningPrice, setCleaningPrice] = useState(900)
+  const [disposalPrice, setDisposalPrice] = useState(0)
+  const [packingPrice, setPackingPrice] = useState(0)
 
   useEffect(() => {
     loadOffer()
@@ -47,6 +50,7 @@ const OfferPrint = () => {
     const { data } = await getCompanySettings()
     if (data) {
       setVatEnabled(data.vat_enabled !== false) // Default to true if not set
+      if (data.vat_rate) setVatRate(data.vat_rate)
     }
   }
 
@@ -63,7 +67,40 @@ const OfferPrint = () => {
       } else {
         console.log('No cleaning service or price found, using default 900')
       }
+      
+      // Find disposal service price
+      const disposalService = services.find(s => s.name === 'Entsorgung' || s.name.toLowerCase().includes('entsorgung'))
+      if (disposalService && disposalService.price !== null && disposalService.price !== undefined) {
+        setDisposalPrice(Number(disposalService.price))
+      }
+      
+      // Find packing service price
+      const packingService = services.find(s => s.name === 'Verpackungsservice' || s.name.toLowerCase().includes('verpackung'))
+      if (packingService && packingService.price !== null && packingService.price !== undefined) {
+        setPackingPrice(Number(packingService.price))
+      }
     }
+  }
+
+  const calculateAdditionalServicesTotal = () => {
+    if (!offer) return 0
+    let total = 0
+    if (offer.extra_cleaning) total += cleaningPrice
+    if (offer.extra_disposal) total += disposalPrice
+    if (offer.extra_packing) total += packingPrice
+    return total
+  }
+
+  const calculateSubtotal = () => {
+    return (offer?.flat_rate_price || 0) + calculateAdditionalServicesTotal()
+  }
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal()
+    if (vatEnabled) {
+      return subtotal + (subtotal * vatRate) / 100
+    }
+    return subtotal
   }
 
   const formatCurrency = (value) => {
@@ -630,18 +667,25 @@ const OfferPrint = () => {
             </div>
           </div>
         </div>
-        <div className="cleaning-price">
-          Pauschalpreis Reinigung: {formatCurrency(cleaningPrice)}
+        <div>
+          <div style={{ marginBottom: '6px' }}>
+            {offer.extra_cleaning && <div>Pauschalpreis Reinigung: {formatCurrency(cleaningPrice)}</div>}
+            {offer.extra_disposal && <div>Pauschalpreis Entsorgung: {formatCurrency(disposalPrice)}</div>}
+            {offer.extra_packing && <div>Pauschalpreis Verpackungsservice: {formatCurrency(packingPrice)}</div>}
+            {!offer.extra_cleaning && !offer.extra_disposal && !offer.extra_packing && (
+              <div style={{ color: '#666', fontStyle: 'italic' }}>Keine Zusatzleistungen gewählt</div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Grand total */}
       <div className="grand-total no-break">
         <span className="total-label">
-          Total {vatEnabled ? '(inkl. 7.7% MwSt.)' : ''}:
+          Total {vatEnabled ? `(inkl. ${vatRate}% MwSt.)` : ''}:
         </span>
         <span className="total-amount">
-          {formatCurrency(vatEnabled ? (offer.flat_rate_price || 0) * 1.077 : (offer.flat_rate_price || 0))}
+          {formatCurrency(calculateTotal())}
         </span>
       </div>
 

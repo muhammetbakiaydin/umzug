@@ -192,6 +192,37 @@ const CreateOffer = () => {
     return timeString.replace(':', '.')
   }
 
+  const calculateAdditionalServicesTotal = () => {
+    let total = 0
+    
+    additionalServices.forEach((service) => {
+      const fieldNameMap = {
+        'Reinigung': 'extraCleaning',
+        'Entsorgung': 'extraDisposal',
+        'Verpackungsservice': 'extraPacking'
+      }
+      const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+      
+      if (formData[fieldName] && service.price) {
+        total += Number(service.price)
+      }
+    })
+    
+    return total
+  }
+
+  const calculateSubtotal = () => {
+    return (formData.flatRatePrice || 0) + calculateAdditionalServicesTotal()
+  }
+
+  const calculateTotal = () => {
+    const subtotal = calculateSubtotal()
+    if (vatEnabled) {
+      return subtotal + (subtotal * vatRate) / 100
+    }
+    return subtotal
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
@@ -276,10 +307,10 @@ const CreateOffer = () => {
         extra_packing: formData.extraPacking,
         
         // Pricing
-        subtotal: formData.flatRatePrice,
-        tax_rate: vatRate,
-        tax_amount: (formData.flatRatePrice * vatRate) / 100,
-        total: formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100,
+        subtotal: calculateSubtotal(),
+        tax_rate: vatEnabled ? vatRate : 0,
+        tax_amount: vatEnabled ? (calculateSubtotal() * vatRate) / 100 : 0,
+        total: calculateTotal(),
         
         notes: formData.notes,
         
@@ -951,24 +982,53 @@ const CreateOffer = () => {
               <h3 className="text-base font-semibold text-slate-900">Preiskalkulation</h3>
             </div>
             <div className="px-6 py-5">
-              <div className="space-y-3 text-slate-300">
-                <div className="flex justify-between text-lg">
-                  <span>Zwischensumme:</span>
-                  <span className="font-mono">{formatCurrency(formData.flatRatePrice)}</span>
+              <div className="space-y-3 text-slate-700">
+                <div className="flex justify-between text-base">
+                  <span>Pauschalpreis Umzug:</span>
+                  <span className="font-mono">{formatCurrency(formData.flatRatePrice || 0)}</span>
                 </div>
-                {vatEnabled && (
-                  <div className="flex justify-between text-lg">
-                    <span>MwSt. ({vatRate}%):</span>
-                    <span className="font-mono">{formatCurrency((formData.flatRatePrice * vatRate) / 100)}</span>
+                {calculateAdditionalServicesTotal() > 0 && (
+                  <>
+                    {additionalServices.map((service) => {
+                      const fieldNameMap = {
+                        'Reinigung': 'extraCleaning',
+                        'Entsorgung': 'extraDisposal',
+                        'Verpackungsservice': 'extraPacking'
+                      }
+                      const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+                      
+                      if (formData[fieldName] && service.price) {
+                        return (
+                          <div key={service.id} className="flex justify-between text-base">
+                            <span>{service.name}:</span>
+                            <span className="font-mono">{formatCurrency(Number(service.price))}</span>
+                          </div>
+                        )
+                      }
+                      return null
+                    })}
+                    <div className="flex justify-between text-base font-semibold border-t border-slate-200 pt-2">
+                      <span>Zwischensumme:</span>
+                      <span className="font-mono">{formatCurrency(calculateSubtotal())}</span>
+                    </div>
+                  </>
+                )}
+                {!calculateAdditionalServicesTotal() && (
+                  <div className="flex justify-between text-base">
+                    <span>Zwischensumme:</span>
+                    <span className="font-mono">{formatCurrency(formData.flatRatePrice || 0)}</span>
                   </div>
                 )}
-                <div className="flex justify-between font-bold text-xl text-slate-900 border-t border-slate-200 pt-3">
+                {vatEnabled && (
+                  <div className="flex justify-between text-base">
+                    <span>MwSt. ({vatRate}%):</span>
+                    <span className="font-mono">{formatCurrency((calculateSubtotal() * vatRate) / 100)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-xl text-slate-900 border-t-2 border-slate-300 pt-3">
                   <span>Total:</span>
                   <span className="font-mono text-brand-primary">
-                    {formatCurrency(vatEnabled 
-                      ? formData.flatRatePrice + (formData.flatRatePrice * vatRate) / 100
-                      : formData.flatRatePrice
-                    )}
+                    {formatCurrency(calculateTotal())}
                   </span>
                 </div>
               </div>
