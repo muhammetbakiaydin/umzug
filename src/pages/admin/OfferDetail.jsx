@@ -1200,14 +1200,39 @@ const OfferDetail = () => {
               <div>
                 <Label className="text-slate-700">Pauschalpreis Umzug (CHF)</Label>
                 {editMode ? (
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                    value={formData.flatRatePrice}
-                    onChange={(e) => handleChange('flatRatePrice', parseFloat(e.target.value) || 0)}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary flex-1"
+                      value={formData.flatRatePrice}
+                      onChange={(e) => handleChange('flatRatePrice', parseFloat(e.target.value) || 0)}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const selectedService = services.find(s => s.value === formData.serviceCategory)
+                        if (selectedService) {
+                          if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
+                            handleChange('flatRatePrice', Number(selectedService.base_price))
+                            toast.success(`Preis von Kategorie "${selectedService.name}" übernommen`)
+                          } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
+                            const estimatedHours = 4
+                            const totalPrice = Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
+                            handleChange('flatRatePrice', totalPrice)
+                            toast.success(`Stundenlohn berechnet: ${estimatedHours}h × ${formData.workers || 2} Arbeiter`)
+                          } else {
+                            toast.error('Keine Preisangabe in der Service-Kategorie gefunden')
+                          }
+                        }
+                      }}
+                      className="whitespace-nowrap"
+                    >
+                      Preis übernehmen
+                    </Button>
+                  </div>
                 ) : (
                   <Input
                     className="bg-slate-50 border-slate-200 text-slate-600"
