@@ -247,11 +247,26 @@ const OfferDetail = () => {
   const exportPDF = () => {
     if (!offer) return
     
+    // Determine the document type and set appropriate title
+    const docType = offer.document_type || 'offer'
+    const docNumber = docType === 'receipt' ? offer.receipt_number : 
+                      docType === 'invoice' ? offer.invoice_number : 
+                      offer.offer_number
+    
+    const docTitle = docType === 'receipt' ? 'Quittung' : 
+                     docType === 'invoice' ? 'Rechnung' : 
+                     'Offerte'
+    
     // Set document title for PDF filename
-    document.title = `Offerte_${offer.offer_number}`
+    document.title = `${docTitle}_${docNumber}`
+    
+    // Determine the print URL based on document type
+    const printUrl = docType === 'receipt' ? `/admin/receipts/${id}/print` :
+                     docType === 'invoice' ? `/admin/invoices/${id}/print` :
+                     `/admin/offers/${id}/print`
     
     // Open the print route in a new window
-    const printWindow = window.open(`/admin/offers/${id}/print`, '_blank')
+    const printWindow = window.open(printUrl, '_blank')
     
     if (printWindow) {
       toast.success('PDF-Druckvorschau wird geöffnet...')

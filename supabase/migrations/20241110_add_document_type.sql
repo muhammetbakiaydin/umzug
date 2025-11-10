@@ -4,7 +4,10 @@
 ALTER TABLE offers 
   ADD COLUMN IF NOT EXISTS document_type TEXT DEFAULT 'offer' CHECK (document_type IN ('offer', 'receipt', 'invoice')),
   ADD COLUMN IF NOT EXISTS receipt_number TEXT,
-  ADD COLUMN IF NOT EXISTS invoice_number TEXT;
+  ADD COLUMN IF NOT EXISTS invoice_number TEXT,
+  ADD COLUMN IF NOT EXISTS line_items_json TEXT,
+  ADD COLUMN IF NOT EXISTS payment_terms TEXT,
+  ADD COLUMN IF NOT EXISTS due_date DATE;
 
 -- Create indexes for better query performance
 CREATE INDEX IF NOT EXISTS idx_offers_document_type ON offers(document_type);
@@ -21,3 +24,6 @@ UPDATE offers SET document_type = 'offer' WHERE document_type IS NULL;
 COMMENT ON COLUMN offers.document_type IS 'Type of document: offer, receipt, or invoice';
 COMMENT ON COLUMN offers.receipt_number IS 'Unique receipt number for receipts';
 COMMENT ON COLUMN offers.invoice_number IS 'Unique invoice number for invoices';
+COMMENT ON COLUMN offers.line_items_json IS 'JSON array of line items for invoices';
+COMMENT ON COLUMN offers.payment_terms IS 'Payment terms for invoices (e.g., 30 Tage netto)';
+COMMENT ON COLUMN offers.due_date IS 'Due date for invoices';

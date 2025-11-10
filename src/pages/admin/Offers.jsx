@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { getOffers, deleteOffer } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
-import { ArrowLeft, Plus, Search, FileText, Trash2, X } from 'lucide-react'
+import { ArrowLeft, Plus, Search, FileText, Trash2, X, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
 const OffersPage = () => {
@@ -90,13 +90,35 @@ const OffersPage = () => {
                 {filteredOffers.length} {filteredOffers.length === 1 ? 'Angebot gefunden' : 'Angebote gefunden'}
               </p>
             </div>
-            <Button
-              onClick={() => navigate('/admin/offers/create')}
-              className="bg-brand-primary hover:bg-[#d16635] text-white font-semibold px-6"
-            >
-              <Plus className="mr-2 h-5 w-5" />
-              Neues Angebot
-            </Button>
+            <div className="relative group">
+              <Button
+                className="bg-brand-primary hover:bg-[#d16635] text-white font-semibold px-6"
+              >
+                <Plus className="mr-2 h-5 w-5" />
+                Neu erstellen
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
+                <button
+                  onClick={() => navigate('/admin/offers/create')}
+                  className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-t-lg transition-colors text-slate-900"
+                >
+                  Offerte
+                </button>
+                <button
+                  onClick={() => navigate('/admin/receipts/create')}
+                  className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors text-slate-900"
+                >
+                  Quittung
+                </button>
+                <button
+                  onClick={() => navigate('/admin/invoices/create')}
+                  className="w-full text-left px-4 py-3 hover:bg-slate-50 rounded-b-lg transition-colors text-slate-900"
+                >
+                  Rechnung
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -11,7 +11,11 @@ import AdminDashboard from './pages/admin/Dashboard'
 import OffersPage from './pages/admin/Offers'
 import OfferDetail from './pages/admin/OfferDetail'
 import OfferPrint from './pages/admin/OfferPrint'
+import ReceiptPrint from './pages/admin/ReceiptPrint'
+import InvoicePrint from './pages/admin/InvoicePrint'
 import CreateOffer from './pages/admin/CreateOffer'
+import CreateReceipt from './pages/admin/CreateReceipt'
+import CreateInvoice from './pages/admin/CreateInvoice'
 import CustomersPage from './pages/admin/Customers'
 import SettingsPage from './pages/admin/Settings'
 
@@ -27,8 +31,10 @@ function App() {
             {/* Public Routes */}
             <Route path="/terms" element={<Terms />} />
             
-            {/* Public PDF Print Route - accessible without login */}
+            {/* Public PDF Print Routes - accessible without login */}
             <Route path="/admin/offers/:id/print" element={<OfferPrint />} />
+            <Route path="/admin/receipts/:id/print" element={<ReceiptPrint />} />
+            <Route path="/admin/invoices/:id/print" element={<InvoicePrint />} />
 
             {/* Redirect homepage to login */}
             <Route path="/" element={<Navigate to="/admin/login" replace />} />
@@ -63,6 +69,26 @@ function App() {
                 <ProtectedRoute>
                   <AdminLayout>
                     <CreateOffer />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/receipts/create"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <CreateReceipt />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/invoices/create"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <CreateInvoice />
                   </AdminLayout>
                 </ProtectedRoute>
               }
