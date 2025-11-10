@@ -15,7 +15,7 @@ import {
   getAllAdditionalServices,
   getCompanySettings
 } from '@/lib/supabase'
-import { generateOfferNumber, generateCustomerNumber } from '@/lib/utils'
+import { generateOfferNumber, generateCustomerNumber, generateReceiptNumber, generateInvoiceNumber } from '@/lib/utils'
 import { ArrowLeft, Save, Search } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -33,8 +33,11 @@ const CreateOffer = () => {
   const [vatEnabled, setVatEnabled] = useState(true)
   
   const [formData, setFormData] = useState({
-    // Offer Details
+    // Document Details
+    documentType: 'offer', // offer, receipt, invoice
     offerNumber: '',
+    receiptNumber: '',
+    invoiceNumber: '',
     offerDate: new Date().toISOString().split('T')[0],
     customerNumber: '',
     contactPerson: '',
@@ -131,10 +134,18 @@ const CreateOffer = () => {
     const { data: custs } = await getCustomers()
     if (custs) setCustomers(custs)
     
-    // Generate offer number
+    // Generate document numbers
     const newOfferNumber = await generateOfferNumber(supabase)
+    const newReceiptNumber = await generateReceiptNumber(supabase)
+    const newInvoiceNumber = await generateInvoiceNumber(supabase)
+    
     setOfferNumber(newOfferNumber)
-    setFormData(prev => ({ ...prev, offerNumber: newOfferNumber }))
+    setFormData(prev => ({ 
+      ...prev, 
+      offerNumber: newOfferNumber,
+      receiptNumber: newReceiptNumber,
+      invoiceNumber: newInvoiceNumber
+    }))
   }
 
   const handleCustomerSearch = async (term) => {
@@ -274,9 +285,12 @@ const CreateOffer = () => {
         customerId = customer.id
       }
 
-      // Create offer
+      // Create offer/receipt/invoice
       const offerData = {
+        document_type: formData.documentType,
         offer_number: formData.offerNumber,
+        receipt_number: formData.documentType === 'receipt' ? formData.receiptNumber : null,
+        invoice_number: formData.documentType === 'invoice' ? formData.invoiceNumber : null,
         offer_date: formData.offerDate,
         customer_id: customerId,
         customer_number: formData.customerNumber || generateCustomerNumber(),
@@ -342,9 +356,13 @@ const CreateOffer = () => {
       const { data: offer, error: offerError } = await createOffer(offerData)
       
       if (offerError) {
-        toast.error('Fehler beim Erstellen des Angebots: ' + offerError.message)
+        const docType = formData.documentType === 'offer' ? 'Angebots' : 
+                       formData.documentType === 'receipt' ? 'Quittung' : 'Rechnung'
+        toast.error(`Fehler beim Erstellen der ${docType}: ` + offerError.message)
       } else {
-        toast.success('Angebot erfolgreich erstellt!')
+        const docType = formData.documentType === 'offer' ? 'Angebot' : 
+                       formData.documentType === 'receipt' ? 'Quittung' : 'Rechnung'
+        toast.success(`${docType} erfolgreich erstellt!`)
         navigate('/admin/offers')
       }
     } catch (error) {
@@ -364,7 +382,11 @@ const CreateOffer = () => {
       {/* Page Header */}
       <div className="bg-white border-b border-slate-200 py-4">
         <div className="container mx-auto px-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-brand-secondary">Neues Angebot erstellen</h1>
+          <h1 className="text-2xl font-bold text-brand-secondary">
+            {formData.documentType === 'offer' ? 'Neues Angebot erstellen' :
+             formData.documentType === 'receipt' ? 'Neue Quittung erstellen' :
+             'Neue Rechnung erstellen'}
+          </h1>
           <div className="text-slate-600 text-sm">
             Erstellt von: <span className="font-semibold text-brand-secondary">{user?.email || 'Admin'}</span>
           </div>
@@ -420,18 +442,44 @@ const CreateOffer = () => {
                 )}
               </div>
 
+              <div>
+                <Label className="text-slate-700">Dokumenttyp *</Label>
+                <select
+                  className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.documentType}
+                  onChange={(e) => handleChange('documentType', e.target.value)}
+                  required
+                >
+                  <option value="offer">Offerte</option>
+                  <option value="receipt">Quittung</option>
+                  <option value="invoice">Rechnung</option>
+                </select>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-700">Offert Nr. *</Label>
+                  <Label className="text-slate-700">
+                    {formData.documentType === 'offer' ? 'Offert Nr. *' : 
+                     formData.documentType === 'receipt' ? 'Quittung Nr. *' : 
+                     'Rechnung Nr. *'}
+                  </Label>
                   <Input
                     className="bg-slate-50 border-slate-200 text-slate-500 cursor-not-allowed"
-                    value={formData.offerNumber}
+                    value={
+                      formData.documentType === 'offer' ? formData.offerNumber :
+                      formData.documentType === 'receipt' ? formData.receiptNumber :
+                      formData.invoiceNumber
+                    }
                     readOnly
                     disabled
                   />
                 </div>
                 <div>
-                  <Label className="text-slate-700">Offertdatum *</Label>
+                  <Label className="text-slate-700">
+                    {formData.documentType === 'offer' ? 'Offertdatum *' : 
+                     formData.documentType === 'receipt' ? 'Quittungsdatum *' : 
+                     'Rechnungsdatum *'}
+                  </Label>
                   <Input
                     type="date"
                     className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
@@ -1089,7 +1137,15 @@ const CreateOffer = () => {
               disabled={loading}
             >
               <Save className="mr-2 h-5 w-5" />
-              {loading ? 'Erstelle Angebot...' : 'Angebot erstellen'}
+              {loading ? (
+                formData.documentType === 'offer' ? 'Erstelle Angebot...' :
+                formData.documentType === 'receipt' ? 'Erstelle Quittung...' :
+                'Erstelle Rechnung...'
+              ) : (
+                formData.documentType === 'offer' ? 'Angebot erstellen' :
+                formData.documentType === 'receipt' ? 'Quittung erstellen' :
+                'Rechnung erstellen'
+              )}
             </Button>
           </div>
         </form>

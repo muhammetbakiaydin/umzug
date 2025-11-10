@@ -12,6 +12,7 @@ const OffersPage = () => {
   const [offers, setOffers] = useState([])
   const [filteredOffers, setFilteredOffers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [docTypeFilter, setDocTypeFilter] = useState('all') // all, offer, receipt, invoice
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [offerToDelete, setOfferToDelete] = useState(null)
@@ -24,18 +25,27 @@ const OffersPage = () => {
   }, [])
 
   useEffect(() => {
+    let filtered = offers
+    
+    // Filter by search term
     if (searchTerm) {
-      const filtered = offers.filter(offer => 
+      filtered = filtered.filter(offer => 
         offer.offer_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.customer_first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.customer_last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        offer.customer_email?.toLowerCase().includes(searchTerm.toLowerCase())
+        offer.receipt_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.invoice_number?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.from_first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.from_last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        offer.from_email?.toLowerCase().includes(searchTerm.toLowerCase())
       )
-      setFilteredOffers(filtered)
-    } else {
-      setFilteredOffers(offers)
     }
-  }, [searchTerm, offers])
+    
+    // Filter by document type
+    if (docTypeFilter !== 'all') {
+      filtered = filtered.filter(offer => offer.document_type === docTypeFilter)
+    }
+    
+    setFilteredOffers(filtered)
+  }, [searchTerm, docTypeFilter, offers])
 
   const loadOffers = async () => {
     const { data, error } = await getOffers()
@@ -93,16 +103,48 @@ const OffersPage = () => {
 
       {/* Content */}
       <div className="container mx-auto px-6 py-8">
-        {/* Search Bar */}
+        {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6 shadow-sm">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
-            <Input
-              className="bg-white border-slate-200 text-slate-900 pl-12 h-12 text-base"
-              placeholder="Suchen nach Angebotsnummer, Kunde..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          <div className="grid md:grid-cols-[1fr,auto] gap-4">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+              <Input
+                className="bg-white border-slate-200 text-slate-900 pl-12 h-12 text-base"
+                placeholder="Suchen nach Nummer, Kunde..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={docTypeFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setDocTypeFilter('all')}
+                className={docTypeFilter === 'all' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+              >
+                Alle
+              </Button>
+              <Button
+                variant={docTypeFilter === 'offer' ? 'default' : 'outline'}
+                onClick={() => setDocTypeFilter('offer')}
+                className={docTypeFilter === 'offer' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+              >
+                Offerten
+              </Button>
+              <Button
+                variant={docTypeFilter === 'receipt' ? 'default' : 'outline'}
+                onClick={() => setDocTypeFilter('receipt')}
+                className={docTypeFilter === 'receipt' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+              >
+                Quittungen
+              </Button>
+              <Button
+                variant={docTypeFilter === 'invoice' ? 'default' : 'outline'}
+                onClick={() => setDocTypeFilter('invoice')}
+                className={docTypeFilter === 'invoice' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+              >
+                Rechnungen
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -133,11 +175,12 @@ const OffersPage = () => {
           <div className="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
             {/* Table Header - Hidden on mobile */}
             <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-3 bg-slate-50 border-b border-slate-200 text-sm font-medium text-slate-600">
-              <div className="col-span-2">Angebotsnummer</div>
+              <div className="col-span-2">Nummer</div>
+              <div className="col-span-1">Typ</div>
               <div className="col-span-2">Kunde</div>
-              <div className="col-span-2">Umzugsdatum</div>
+              <div className="col-span-2">Datum</div>
               <div className="col-span-2">Kategorie</div>
-              <div className="col-span-2">Total</div>
+              <div className="col-span-1">Total</div>
               <div className="col-span-1">Status</div>
               <div className="col-span-1 text-right">Aktionen</div>
             </div>
@@ -158,18 +201,32 @@ const OffersPage = () => {
                           <FileText className="w-4 h-4 text-brand-primary" />
                         </div>
                         <span className="text-sm font-medium text-slate-900 font-mono">
-                          {offer.offer_number}
+                          {offer.document_type === 'receipt' ? offer.receipt_number :
+                           offer.document_type === 'invoice' ? offer.invoice_number :
+                           offer.offer_number}
                         </span>
                       </div>
+                    </div>
+                    
+                    <div className="col-span-1 flex items-center">
+                      <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                        offer.document_type === 'offer' ? 'bg-blue-100 text-blue-800' :
+                        offer.document_type === 'receipt' ? 'bg-green-100 text-green-800' :
+                        'bg-purple-100 text-purple-800'
+                      }`}>
+                        {offer.document_type === 'offer' ? 'Offerte' :
+                         offer.document_type === 'receipt' ? 'Quittung' :
+                         'Rechnung'}
+                      </span>
                     </div>
                     
                     <div className="col-span-2 flex items-center">
                       <div className="min-w-0">
                         <div className="text-sm font-medium text-slate-900 truncate">
-                          {offer.customer_first_name} {offer.customer_last_name}
+                          {offer.from_first_name} {offer.from_last_name}
                         </div>
-                        {offer.customer_email && (
-                          <div className="text-xs text-slate-500 truncate">{offer.customer_email}</div>
+                        {offer.from_email && (
+                          <div className="text-xs text-slate-500 truncate">{offer.from_email}</div>
                         )}
                       </div>
                     </div>
@@ -184,7 +241,7 @@ const OffersPage = () => {
                       <span className="text-sm text-slate-600">{offer.category || 'N/A'}</span>
                     </div>
                     
-                    <div className="col-span-2 flex items-center">
+                    <div className="col-span-1 flex items-center">
                       <span className="text-sm font-semibold text-slate-900">
                         CHF {offer.total?.toFixed(2) || '0.00'}
                       </span>

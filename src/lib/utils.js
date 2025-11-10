@@ -36,3 +36,35 @@ export async function generateOfferNumber(supabase) {
   const lastNumber = parseInt(data[0].offer_number)
   return String(lastNumber + 1).padStart(5, '0')
 }
+
+export async function generateReceiptNumber(supabase) {
+  const { data, error } = await supabase
+    .from('offers')
+    .select('receipt_number')
+    .not('receipt_number', 'is', null)
+    .order('receipt_number', { ascending: false })
+    .limit(1)
+
+  if (error || !data || data.length === 0) {
+    return 'Q-10001'
+  }
+
+  const lastNumber = parseInt(data[0].receipt_number.split('-')[1])
+  return `Q-${String(lastNumber + 1).padStart(5, '0')}`
+}
+
+export async function generateInvoiceNumber(supabase) {
+  const { data, error } = await supabase
+    .from('offers')
+    .select('invoice_number')
+    .not('invoice_number', 'is', null)
+    .order('invoice_number', { ascending: false })
+    .limit(1)
+
+  if (error || !data || data.length === 0) {
+    return 'R-10001'
+  }
+
+  const lastNumber = parseInt(data[0].invoice_number.split('-')[1])
+  return `R-${String(lastNumber + 1).padStart(5, '0')}`
+}
