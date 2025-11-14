@@ -563,7 +563,7 @@ const OfferPrint = () => {
           <div><strong>Offert Nr.:</strong> {offer.offer_number || '—'}</div>
           <div><strong>Offertdatum:</strong> {formatDate(offer.offer_date)}</div>
           <div><strong>Ihre Kundennummer:</strong> {offer.customer_number || '—'}</div>
-          <div><strong>Ihr Ansprechpartner:</strong> <br> </br> {offer.contact_person || '—'}</div>
+          <div><strong>Ihr Ansprechpartner:</strong><br />{offer.contact_person || '—'}</div>
         </div>
         
         <div className="location-block">
