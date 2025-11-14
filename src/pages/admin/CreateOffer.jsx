@@ -279,9 +279,30 @@ const CreateOffer = () => {
 
       // Reload services
       const { data: cats } = await getServiceCategories()
-      if (cats) setServices(cats)
+      if (cats) {
+        setServices(cats)
+        
+        // Recalculate price based on updated service data
+        let totalPrice = 0
+        formData.serviceCategories.forEach(categoryValue => {
+          const selectedService = cats.find(s => s.value === categoryValue)
+          if (selectedService) {
+            if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
+              totalPrice += Number(selectedService.base_price)
+            } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
+              const estimatedHours = 4
+              totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
+            }
+          }
+        })
+        
+        // Update the flatRatePrice if categories are selected
+        if (totalPrice > 0 && formData.serviceCategories.length > 0) {
+          handleChange('flatRatePrice', totalPrice)
+        }
+      }
 
-      toast.success('Service-Kategorie erfolgreich aktualisiert')
+      toast.success('Service-Kategorie und Preis aktualisiert')
       handleCloseEditModal()
     } catch (error) {
       console.error('Error updating service category:', error)
@@ -1265,40 +1286,40 @@ const CreateOffer = () => {
 
             <div className="p-6 space-y-4">
               <div>
-                <Label className="text-slate-700">Name *</Label>
+                <Label className="text-slate-900 font-semibold block mb-2">Name *</Label>
                 <Input
                   value={editForm.name}
                   onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="z.B. Umzug"
-                  className="bg-white border-slate-200"
+                  className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
                 />
               </div>
 
               <div>
-                <Label className="text-slate-700">Beschreibung</Label>
+                <Label className="text-slate-900 font-semibold block mb-2">Beschreibung</Label>
                 <textarea
                   value={editForm.description}
                   onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
                   placeholder="Beschreibung der Dienstleistung..."
-                  className="w-full min-h-[80px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2"
+                  className="w-full min-h-[80px] rounded-md border border-slate-300 !bg-white !text-slate-900 placeholder:!text-slate-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                 />
               </div>
 
               <div>
-                <Label className="text-slate-700">Preismodell *</Label>
+                <Label className="text-slate-900 font-semibold block mb-2">Preismodell *</Label>
                 <select
                   value={editForm.pricing_model}
                   onChange={(e) => setEditForm(prev => ({ ...prev, pricing_model: e.target.value }))}
-                  className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-300 !bg-white !text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                 >
-                  <option value="fixed">Pauschalpreis</option>
-                  <option value="hourly">Stundenlohn</option>
+                  <option value="fixed" className="!bg-white !text-slate-900">Pauschalpreis</option>
+                  <option value="hourly" className="!bg-white !text-slate-900">Stundenlohn</option>
                 </select>
               </div>
 
               {editForm.pricing_model === 'fixed' ? (
                 <div>
-                  <Label className="text-slate-700">Pauschalpreis (CHF)</Label>
+                  <Label className="text-slate-900 font-semibold block mb-2">Pauschalpreis (CHF)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1306,12 +1327,12 @@ const CreateOffer = () => {
                     value={editForm.base_price}
                     onChange={(e) => setEditForm(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className="bg-white border-slate-200"
+                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
                   />
                 </div>
               ) : (
                 <div>
-                  <Label className="text-slate-700">Stundenlohn (CHF/Std)</Label>
+                  <Label className="text-slate-900 font-semibold block mb-2">Stundenlohn (CHF/Std)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1319,7 +1340,7 @@ const CreateOffer = () => {
                     value={editForm.hourly_rate}
                     onChange={(e) => setEditForm(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
                     placeholder="0.00"
-                    className="bg-white border-slate-200"
+                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
                   />
                 </div>
               )}
