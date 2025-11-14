@@ -741,9 +741,6 @@ const OfferPrint = () => {
         <p>Tel: 032 310 70 60 / 078 935 82 82 • E-Mail: info@umzug-unit.ch</p>
       </div>
 
-      {/* Page Break - Start Page 2 */}
-      <div className="page-break"></div>
-
       {/* Two-column Terms Section */}
       <div className="terms-two-column">
         {/* Left Column */}
