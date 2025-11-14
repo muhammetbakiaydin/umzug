@@ -277,12 +277,12 @@ const CreateOffer = () => {
 
       if (error) throw error
 
-      // Reload services
+      // Reload services to get fresh data
       const { data: cats } = await getServiceCategories()
       if (cats) {
         setServices(cats)
         
-        // Recalculate price based on updated service data
+        // Force recalculate price based on ALL selected service categories with updated data
         let totalPrice = 0
         formData.serviceCategories.forEach(categoryValue => {
           const selectedService = cats.find(s => s.value === categoryValue)
@@ -291,14 +291,18 @@ const CreateOffer = () => {
               totalPrice += Number(selectedService.base_price)
             } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
               const estimatedHours = 4
-              totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
+              const workers = formData.workers || 2
+              totalPrice += Number(selectedService.hourly_rate) * estimatedHours * workers
             }
           }
         })
         
-        // Update the flatRatePrice if categories are selected
-        if (totalPrice > 0 && formData.serviceCategories.length > 0) {
-          handleChange('flatRatePrice', totalPrice)
+        // Always update the price when saving (force update)
+        if (formData.serviceCategories.length > 0) {
+          setFormData(prev => ({
+            ...prev,
+            flatRatePrice: totalPrice
+          }))
         }
       }
 
