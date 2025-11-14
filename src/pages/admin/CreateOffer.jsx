@@ -886,7 +886,7 @@ const CreateOffer = () => {
               </div>
 
               <div>
-                <Label className="text-slate-700">Etage *</Label>
+                <Label className="text-slate-700">Stockwerke *</Label>
                 <Input
                   type="number"
                   min="0"
@@ -956,7 +956,7 @@ const CreateOffer = () => {
               </div>
 
               <div>
-                <Label className="text-slate-700">Etage *</Label>
+                <Label className="text-slate-700">Stockwerke *</Label>
                 <Input
                   type="number"
                   min="0"
