@@ -12,6 +12,7 @@ const OfferPrint = () => {
   const [disposalPrice, setDisposalPrice] = useState(0)
   const [packingPrice, setPackingPrice] = useState(0)
   const [serviceCategories, setServiceCategories] = useState([])
+  const [additionalServices, setAdditionalServices] = useState([])
 
   useEffect(() => {
     const loadData = async () => {
@@ -78,7 +79,10 @@ const OfferPrint = () => {
     const { data: services } = await getAllAdditionalServices()
     console.log('All additional services:', services)
     if (services) {
-      // Find the cleaning service price
+      // Set all additional services
+      setAdditionalServices(services)
+      
+      // Find the cleaning service price (for backward compatibility)
       const cleaningService = services.find(s => s.name === 'Reinigung' || s.name.toLowerCase().includes('reinigung'))
       console.log('Cleaning service found:', cleaningService)
       if (cleaningService && cleaningService.price !== null && cleaningService.price !== undefined) {
