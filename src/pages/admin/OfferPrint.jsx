@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getOffer, getCompanySettings, getAllAdditionalServices } from '@/lib/supabase'
+import { getOffer, getCompanySettings, getAllAdditionalServices, getServiceCategories } from '@/lib/supabase'
 
 const OfferPrint = () => {
   const { id } = useParams()
@@ -11,11 +11,13 @@ const OfferPrint = () => {
   const [cleaningPrice, setCleaningPrice] = useState(900)
   const [disposalPrice, setDisposalPrice] = useState(0)
   const [packingPrice, setPackingPrice] = useState(0)
+  const [serviceCategories, setServiceCategories] = useState([])
 
   useEffect(() => {
     loadOffer()
     loadSettings()
     loadAdditionalServices()
+    loadServiceCategories()
   }, [id])
 
   useEffect(() => {
@@ -80,6 +82,22 @@ const OfferPrint = () => {
         setPackingPrice(Number(packingService.price))
       }
     }
+  }
+
+  const loadServiceCategories = async () => {
+    const { data } = await getServiceCategories()
+    if (data) {
+      setServiceCategories(data)
+    }
+  }
+
+  const getCategoryNames = () => {
+    if (!offer || !offer.category) return []
+    const categoryValues = offer.category.split(',').map(cat => cat.trim())
+    return categoryValues.map(value => {
+      const category = serviceCategories.find(cat => cat.value === value)
+      return category ? category.name : value
+    })
   }
 
   const calculateAdditionalServicesTotal = () => {
@@ -583,6 +601,12 @@ const OfferPrint = () => {
           <div className="kv-row">
             <div className="kv-label">Zusätzliche Objektbeschreibung:</div>
             <div className="kv-value">{offer.object_description}</div>
+          </div>
+        )}
+        {getCategoryNames().length > 0 && (
+          <div className="kv-row">
+            <div className="kv-label">Service-Kategorien:</div>
+            <div className="kv-value">{getCategoryNames().join(', ')}</div>
           </div>
         )}
       </div>

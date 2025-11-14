@@ -38,7 +38,7 @@ const CreateOffer = () => {
     offerDate: new Date().toISOString().split('T')[0],
     customerNumber: '',
     contactPerson: '',
-    serviceCategory: 'umzug',
+    serviceCategories: ['umzug'], // Changed to array for multi-select
     selectedCustomerId: null,
     
     // Current Address (Aktueller Standort)
@@ -91,25 +91,31 @@ const CreateOffer = () => {
     loadInitialData()
   }, [])
 
-  // Auto-fill price when service category changes
+  // Auto-fill price when service categories change
   useEffect(() => {
-    if (formData.serviceCategory && services.length > 0) {
-      const selectedService = services.find(s => s.value === formData.serviceCategory)
-      if (selectedService) {
-        // Only auto-fill if flatRatePrice is empty or 0
-        if (!formData.flatRatePrice || formData.flatRatePrice === 0) {
+    if (formData.serviceCategories && formData.serviceCategories.length > 0 && services.length > 0) {
+      // Calculate total price from all selected services
+      let totalPrice = 0
+      
+      formData.serviceCategories.forEach(categoryValue => {
+        const selectedService = services.find(s => s.value === categoryValue)
+        if (selectedService) {
           if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-            handleChange('flatRatePrice', Number(selectedService.base_price))
+            totalPrice += Number(selectedService.base_price)
           } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
             // For hourly, calculate based on workers and estimated hours (e.g., 4 hours default)
             const estimatedHours = 4
-            const totalPrice = Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
-            handleChange('flatRatePrice', totalPrice)
+            totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
           }
         }
+      })
+      
+      // Only auto-fill if flatRatePrice is empty or 0
+      if (totalPrice > 0 && (!formData.flatRatePrice || formData.flatRatePrice === 0)) {
+        handleChange('flatRatePrice', totalPrice)
       }
     }
-  }, [formData.serviceCategory, services, formData.workers])
+  }, [formData.serviceCategories, services, formData.workers])
 
   const loadInitialData = async () => {
     // Load service categories
@@ -249,6 +255,14 @@ const CreateOffer = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate at least one service category is selected
+    if (!formData.serviceCategories || formData.serviceCategories.length === 0) {
+      toast.error('Bitte wählen Sie mindestens eine Service-Kategorie aus')
+      setLoading(false)
+      return
+    }
+    
     setLoading(true)
 
     try {
@@ -286,7 +300,7 @@ const CreateOffer = () => {
         customer_id: customerId,
         customer_number: formData.customerNumber || generateCustomerNumber(),
         contact_person: formData.contactPerson,
-        category: formData.serviceCategory,
+        category: formData.serviceCategories.join(','), // Store as comma-separated string
         status: formData.status,
         
         // Current address
@@ -473,33 +487,44 @@ const CreateOffer = () => {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-700">Service-Kategorie *</Label>
-                  <select
-                    className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                    value={formData.serviceCategory}
-                    onChange={(e) => handleChange('serviceCategory', e.target.value)}
-                    required
-                  >
-                    {services.map(service => (
-                      <option key={service.id} value={service.value}>
-                        {service.name}
-                        {service.pricing_model === 'hourly' && service.hourly_rate 
-                          ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
-                          : service.pricing_model === 'fixed' && service.base_price
-                          ? ` - CHF ${Number(service.base_price).toFixed(2)}`
-                          : ''}
-                      </option>
-                    ))}
-                  </select>
-                  {(() => {
-                    const selectedService = services.find(s => s.value === formData.serviceCategory)
-                    if (selectedService && selectedService.description) {
+                  <Label className="text-slate-700">Service-Kategorien *</Label>
+                  <div className="border border-slate-200 rounded-md p-4 bg-white space-y-3">
+                    {services.map(service => {
+                      const isSelected = formData.serviceCategories.includes(service.value)
                       return (
-                        <p className="text-xs text-slate-600 mt-1.5">{selectedService.description}</p>
+                        <div key={service.id} className="flex items-start space-x-3">
+                          <input
+                            type="checkbox"
+                            id={`service-${service.id}`}
+                            checked={isSelected}
+                            onChange={(e) => {
+                              const newCategories = e.target.checked
+                                ? [...formData.serviceCategories, service.value]
+                                : formData.serviceCategories.filter(cat => cat !== service.value)
+                              handleChange('serviceCategories', newCategories)
+                            }}
+                            className="mt-1 h-4 w-4 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                          />
+                          <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
+                            <div className="font-medium text-slate-900">
+                              {service.name}
+                              {service.pricing_model === 'hourly' && service.hourly_rate 
+                                ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
+                                : service.pricing_model === 'fixed' && service.base_price
+                                ? ` - CHF ${Number(service.base_price).toFixed(2)}`
+                                : ''}
+                            </div>
+                            {service.description && (
+                              <div className="text-xs text-slate-600 mt-0.5">{service.description}</div>
+                            )}
+                          </label>
+                        </div>
                       )
-                    }
-                    return null
-                  })()}
+                    })}
+                  </div>
+                  {formData.serviceCategories.length === 0 && (
+                    <p className="text-xs text-red-600 mt-1.5">Bitte wählen Sie mindestens eine Kategorie aus</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-slate-700">Status</Label>
@@ -939,19 +964,27 @@ const CreateOffer = () => {
                     type="button"
                     variant="outline"
                     onClick={() => {
-                      const selectedService = services.find(s => s.value === formData.serviceCategory)
-                      if (selectedService) {
-                        if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-                          handleChange('flatRatePrice', Number(selectedService.base_price))
-                          toast.success(`Preis von Kategorie "${selectedService.name}" übernommen`)
-                        } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
-                          const estimatedHours = 4
-                          const totalPrice = Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
-                          handleChange('flatRatePrice', totalPrice)
-                          toast.success(`Stundenlohn berechnet: ${estimatedHours}h × ${formData.workers || 2} Arbeiter`)
-                        } else {
-                          toast.error('Keine Preisangabe in der Service-Kategorie gefunden')
+                      let totalPrice = 0
+                      const categoryNames = []
+                      
+                      formData.serviceCategories.forEach(categoryValue => {
+                        const selectedService = services.find(s => s.value === categoryValue)
+                        if (selectedService) {
+                          categoryNames.push(selectedService.name)
+                          if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
+                            totalPrice += Number(selectedService.base_price)
+                          } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
+                            const estimatedHours = 4
+                            totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
+                          }
                         }
+                      })
+                      
+                      if (totalPrice > 0) {
+                        handleChange('flatRatePrice', totalPrice)
+                        toast.success(`Preis von ${categoryNames.length} Kategorie(n) übernommen`)
+                      } else {
+                        toast.error('Keine Preisangabe in den ausgewählten Kategorien gefunden')
                       }
                     }}
                     className="whitespace-nowrap"

@@ -66,7 +66,7 @@ const OfferDetail = () => {
     setFormData({
       offerDate: data.offer_date || '',
       contactPerson: data.contact_person || '',
-      serviceCategory: data.category || 'umzug',
+      serviceCategories: data.category ? data.category.split(',') : ['umzug'], // Parse comma-separated string to array
       status: data.status || 'draft',
       
       fromSalutation: data.from_salutation || 'Herr',
@@ -122,7 +122,7 @@ const OfferDetail = () => {
       const updateData = {
         offer_date: formData.offerDate,
         contact_person: formData.contactPerson,
-        category: formData.serviceCategory,
+        category: formData.serviceCategories.join(','), // Convert array to comma-separated string
         status: formData.status,
         
         from_salutation: formData.fromSalutation,
@@ -531,67 +531,59 @@ const OfferDetail = () => {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-700">Service-Kategorie</Label>
+                  <Label className="text-slate-700">Service-Kategorien</Label>
                   {editMode ? (
-                    <>
-                      <select
-                        className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                        value={formData.serviceCategory}
-                        onChange={(e) => handleChange('serviceCategory', e.target.value)}
-                      >
-                        {services.map(service => (
-                          <option key={service.id} value={service.value}>
-                            {service.name}
-                            {service.pricing_model === 'hourly' && service.hourly_rate 
-                              ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
-                              : service.pricing_model === 'fixed' && service.base_price
-                              ? ` - CHF ${Number(service.base_price).toFixed(2)}`
-                              : ''}
-                          </option>
-                        ))}
-                      </select>
-                      {(() => {
-                        const selectedService = services.find(s => s.value === formData.serviceCategory)
-                        if (selectedService && selectedService.description) {
-                          return (
-                            <p className="text-xs text-slate-600 mt-1.5">{selectedService.description}</p>
-                          )
-                        }
-                        return null
-                      })()}
-                    </>
-                  ) : (
-                    <>
-                      <Input
-                        className="bg-slate-50 border-slate-200 text-slate-600"
-                        value={offer.category}
-                        readOnly
-                      />
-                      {(() => {
-                        const selectedService = services.find(s => s.value === offer.category)
-                        if (selectedService) {
-                          let priceInfo = ''
-                          if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
-                            priceInfo = `CHF ${Number(selectedService.hourly_rate).toFixed(2)}/Std`
-                          } else if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-                            priceInfo = `CHF ${Number(selectedService.base_price).toFixed(2)}`
-                          }
-                          if (priceInfo || selectedService.description) {
-                            return (
-                              <div className="mt-1.5 space-y-1">
-                                {priceInfo && (
-                                  <p className="text-xs font-semibold text-brand-primary">{priceInfo}</p>
-                                )}
-                                {selectedService.description && (
-                                  <p className="text-xs text-slate-600">{selectedService.description}</p>
-                                )}
+                    <div className="border border-slate-200 rounded-md p-4 bg-white space-y-3">
+                      {services.map(service => {
+                        const isSelected = formData.serviceCategories.includes(service.value)
+                        return (
+                          <div key={service.id} className="flex items-start space-x-3">
+                            <input
+                              type="checkbox"
+                              id={`service-${service.id}`}
+                              checked={isSelected}
+                              onChange={(e) => {
+                                const newCategories = e.target.checked
+                                  ? [...formData.serviceCategories, service.value]
+                                  : formData.serviceCategories.filter(cat => cat !== service.value)
+                                handleChange('serviceCategories', newCategories)
+                              }}
+                              className="mt-1 h-4 w-4 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                            />
+                            <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
+                              <div className="font-medium text-slate-900">
+                                {service.name}
+                                {service.pricing_model === 'hourly' && service.hourly_rate 
+                                  ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
+                                  : service.pricing_model === 'fixed' && service.base_price
+                                  ? ` - CHF ${Number(service.base_price).toFixed(2)}`
+                                  : ''}
                               </div>
-                            )
-                          }
-                        }
-                        return null
-                      })()}
-                    </>
+                              {service.description && (
+                                <div className="text-xs text-slate-600 mt-0.5">{service.description}</div>
+                              )}
+                            </label>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 border border-slate-200 rounded-md p-3">
+                      {offer.category ? offer.category.split(',').map((cat, idx) => {
+                        const selectedService = services.find(s => s.value === cat.trim())
+                        return (
+                          <div key={idx} className="flex items-center gap-2 mb-1 last:mb-0">
+                            <span className="inline-block w-2 h-2 rounded-full bg-brand-primary"></span>
+                            <span className="text-slate-900 font-medium">
+                              {selectedService ? selectedService.name : cat}
+                            </span>
+                          </div>
+                        )
+                      }) : 'Keine Kategorie ausgewählt'}
+                    </div>
+                  )}
+                  {editMode && formData.serviceCategories.length === 0 && (
+                    <p className="text-xs text-red-600 mt-1.5">Bitte wählen Sie mindestens eine Kategorie aus</p>
                   )}
                 </div>
                 <div>
@@ -1228,19 +1220,27 @@ const OfferDetail = () => {
                       type="button"
                       variant="outline"
                       onClick={() => {
-                        const selectedService = services.find(s => s.value === formData.serviceCategory)
-                        if (selectedService) {
-                          if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-                            handleChange('flatRatePrice', Number(selectedService.base_price))
-                            toast.success(`Preis von Kategorie "${selectedService.name}" übernommen`)
-                          } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
-                            const estimatedHours = 4
-                            const totalPrice = Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
-                            handleChange('flatRatePrice', totalPrice)
-                            toast.success(`Stundenlohn berechnet: ${estimatedHours}h × ${formData.workers || 2} Arbeiter`)
-                          } else {
-                            toast.error('Keine Preisangabe in der Service-Kategorie gefunden')
+                        let totalPrice = 0
+                        const categoryNames = []
+                        
+                        formData.serviceCategories.forEach(categoryValue => {
+                          const selectedService = services.find(s => s.value === categoryValue)
+                          if (selectedService) {
+                            categoryNames.push(selectedService.name)
+                            if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
+                              totalPrice += Number(selectedService.base_price)
+                            } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
+                              const estimatedHours = 4
+                              totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
+                            }
                           }
+                        })
+                        
+                        if (totalPrice > 0) {
+                          handleChange('flatRatePrice', totalPrice)
+                          toast.success(`Preis von ${categoryNames.length} Kategorie(n) übernommen`)
+                        } else {
+                          toast.error('Keine Preisangabe in den ausgewählten Kategorien gefunden')
                         }
                       }}
                       className="whitespace-nowrap"
