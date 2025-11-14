@@ -1245,7 +1245,7 @@ const CreateOffer = () => {
               <h3 className="text-base font-semibold text-slate-900">Zusatzleistungen</h3>
               <p className="text-sm text-slate-600 mt-1">Klicken Sie zum Aktivieren</p>
             </div>
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 space-y-4" key={`zusatzleistungen-${formData.workers}`}>
               {additionalServices.map((service) => {
                 // Map service names to correct form field names
                 const fieldNameMap = {
