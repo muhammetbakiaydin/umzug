@@ -545,7 +545,7 @@ const OfferPrint = () => {
           <div><strong>Offert Nr.:</strong> {offer.offer_number || '—'}</div>
           <div><strong>Offertdatum:</strong> {formatDate(offer.offer_date)}</div>
           <div><strong>Ihre Kundennummer:</strong> {offer.customer_number || '—'}</div>
-          <div><strong>Ihr Ansprechpartner:</strong> {offer.contact_person || '—'}</div>
+          <div><strong>Ihr Ansprechpartner:</strong> <br> </br> {offer.contact_person || '—'}</div>
         </div>
         
         <div className="location-block">
@@ -725,7 +725,11 @@ const OfferPrint = () => {
           <div className="terms-section">
             <div className="terms-heading">Versicherungen</div>
             <div className="terms-text">
-              <p>Gegen Verlust oder Beschädigung Ihrer Güter haften wir gemäss Schweizerischem Frachtvertragsgesetz (OF). Wir machen Sie darauf aufmerksam, dass die Ware zum Zeitwert und nicht zum Neuwert versichert ist und zwar bis zu einem Warenwert von CHF 1 Mio.</p>
+              <p>Die Transportversicherung ist im Preis inbegriffen mit einem
+Deckungsumfang von CHF 40'000.00. Weiter haftet unsere
+Betriebshaftpflichtversicherung bei Schäden bis zu CHF 100'000.-
+Bestehende Schäden am Mobiliar sind dem Umzugschef vor dem Umzug
+mitzuteilen.</p>
             </div>
           </div>
 
@@ -787,8 +791,8 @@ const OfferPrint = () => {
       {/* Sender Block */}
       <div className="sender-block">
         <p>Freundliche Grüsse</p>
-        <p><strong>Verkaufsleiter</strong></p>
-        <p>Minerva Marco</p>
+        <p><strong>Sachbearbeiter</strong></p>
+        <p>{offer.contact_person || 'Minerva Marco'}</p>
         <p style={{ marginTop: '8px' }}><strong>Umzug UNIT GmbH</strong></p>
         <p>Tulpenweg 22</p>
         <p>3250 Lyss</p>
