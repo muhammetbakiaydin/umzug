@@ -43,6 +43,15 @@ const CreateOffer = () => {
     hourly_rate: 0
   })
   
+  // Additional service edit modal state
+  const [showEditAdditionalModal, setShowEditAdditionalModal] = useState(false)
+  const [editingAdditionalService, setEditingAdditionalService] = useState(null)
+  const [editAdditionalForm, setEditAdditionalForm] = useState({
+    name: '',
+    description: '',
+    price: 0
+  })
+  
   const [formData, setFormData] = useState({
     // Document Details
     offerNumber: '',
@@ -316,6 +325,81 @@ const CreateOffer = () => {
       toast.success(`Service-Kategorie ${!currentActive ? 'aktiviert' : 'deaktiviert'}`)
     } catch (error) {
       console.error('Error toggling service:', error)
+      toast.error('Fehler beim Ändern des Status')
+    }
+  }
+
+  // Additional service edit handlers
+  const handleOpenEditAdditionalModal = (service) => {
+    setEditingAdditionalService(service)
+    setEditAdditionalForm({
+      name: service.name,
+      description: service.description || '',
+      price: service.price || 0
+    })
+    setShowEditAdditionalModal(true)
+  }
+
+  const handleCloseEditAdditionalModal = () => {
+    setShowEditAdditionalModal(false)
+    setEditingAdditionalService(null)
+    setEditAdditionalForm({
+      name: '',
+      description: '',
+      price: 0
+    })
+  }
+
+  const handleSaveAdditionalService = async () => {
+    if (!editAdditionalForm.name.trim()) {
+      toast.error('Bitte geben Sie einen Namen ein')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('additional_services')
+        .update({
+          name: editAdditionalForm.name,
+          description: editAdditionalForm.description,
+          price: editAdditionalForm.price
+        })
+        .eq('id', editingAdditionalService.id)
+
+      if (error) throw error
+
+      // Reload additional services
+      const { data: services } = await getAllAdditionalServices()
+      if (services) {
+        setAdditionalServices(services.filter(s => s.active))
+      }
+
+      toast.success('Zusatzleistung aktualisiert')
+      handleCloseEditAdditionalModal()
+    } catch (error) {
+      console.error('Error updating additional service:', error)
+      toast.error('Fehler beim Aktualisieren der Zusatzleistung')
+    }
+  }
+
+  const handleToggleAdditionalServiceActive = async (serviceId, currentActive) => {
+    try {
+      const { error } = await supabase
+        .from('additional_services')
+        .update({ active: !currentActive })
+        .eq('id', serviceId)
+
+      if (error) throw error
+
+      // Reload additional services
+      const { data: services } = await getAllAdditionalServices()
+      if (services) {
+        setAdditionalServices(services.filter(s => s.active))
+      }
+
+      toast.success(`Zusatzleistung ${!currentActive ? 'aktiviert' : 'deaktiviert'}`)
+    } catch (error) {
+      console.error('Error toggling additional service:', error)
       toast.error('Fehler beim Ändern des Status')
     }
   }
@@ -1157,7 +1241,7 @@ const CreateOffer = () => {
                 const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
                 
                 return (
-                  <div key={service.id} className="flex items-center justify-between bg-slate-50 p-4 rounded-lg">
+                  <div key={service.id} className="group flex items-center justify-between bg-slate-50 p-4 rounded-lg">
                     <div className="flex-1">
                       <div className="flex items-center gap-3">
                         <Label htmlFor={fieldName} className="text-slate-700 cursor-pointer font-medium">
@@ -1173,14 +1257,43 @@ const CreateOffer = () => {
                         <p className="text-sm text-slate-600 mt-1">{service.description}</p>
                       )}
                     </div>
-                    <input
-                      type="checkbox"
-                      id={fieldName}
-                      checked={formData[fieldName] || false}
-                      onChange={(e) => handleChange(fieldName, e.target.checked)}
-                      className="w-5 h-5 rounded border-slate-200 text-brand-primary focus:ring-yellow-400 focus:ring-offset-slate-800"
-                      role="switch"
-                    />
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditAdditionalModal(service)}
+                          className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 hover:text-brand-primary transition-colors"
+                          title="Bearbeiten"
+                        >
+                          <Settings className="h-4 w-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleToggleAdditionalServiceActive(service.id, service.active)
+                          }}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                            service.active !== false ? 'bg-brand-primary' : 'bg-slate-300'
+                          }`}
+                          title={service.active !== false ? 'Aktiv' : 'Inaktiv'}
+                        >
+                          <span
+                            className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                              service.active !== false ? 'translate-x-5' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
+                      </div>
+                      <input
+                        type="checkbox"
+                        id={fieldName}
+                        checked={formData[fieldName] || false}
+                        onChange={(e) => handleChange(fieldName, e.target.checked)}
+                        className="w-5 h-5 rounded border-slate-200 text-brand-primary focus:ring-yellow-400 focus:ring-offset-slate-800"
+                        role="switch"
+                      />
+                    </div>
                   </div>
                 )
               })}
@@ -1336,6 +1449,75 @@ const CreateOffer = () => {
               <Button
                 type="button"
                 onClick={handleSaveServiceCategory}
+                className="bg-brand-primary hover:bg-[#d16635] text-slate-900"
+              >
+                Speichern
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Additional Service Modal */}
+      {showEditAdditionalModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Zusatzleistung bearbeiten</h2>
+              <button
+                onClick={handleCloseEditAdditionalModal}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <Label className="text-slate-900 font-semibold block mb-2">Name *</Label>
+                <Input
+                  value={editAdditionalForm.name}
+                  onChange={(e) => setEditAdditionalForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="z.B. Reinigung"
+                  className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-900 font-semibold block mb-2">Beschreibung</Label>
+                <textarea
+                  value={editAdditionalForm.description}
+                  onChange={(e) => setEditAdditionalForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Beschreibung der Zusatzleistung..."
+                  className="w-full min-h-[80px] rounded-md border border-slate-300 !bg-white !text-slate-900 placeholder:!text-slate-400 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-900 font-semibold block mb-2">Preis (CHF)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editAdditionalForm.price}
+                  onChange={(e) => setEditAdditionalForm(prev => ({ ...prev, price: parseFloat(e.target.value) || 0 }))}
+                  placeholder="0.00"
+                  className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
+                />
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseEditAdditionalModal}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveAdditionalService}
                 className="bg-brand-primary hover:bg-[#d16635] text-slate-900"
               >
                 Speichern
