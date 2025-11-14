@@ -36,8 +36,6 @@ const SettingsPage = () => {
     name: '', 
     value: '', 
     description: '',
-    pricing_model: 'custom',
-    hourly_rate: 120,
     base_price: 0,
     active: true 
   })
@@ -127,8 +125,6 @@ const SettingsPage = () => {
         name: '', 
         value: '', 
         description: '',
-        pricing_model: 'custom',
-        hourly_rate: 120,
         base_price: 0,
         active: true 
       })
@@ -140,8 +136,6 @@ const SettingsPage = () => {
     setEditingCategory({
       ...category,
       description: category.description || '',
-      pricing_model: category.pricing_model || 'custom',
-      hourly_rate: category.hourly_rate || 120,
       base_price: category.base_price || 0
     })
   }
@@ -156,8 +150,6 @@ const SettingsPage = () => {
       name: editingCategory.name,
       value: editingCategory.value,
       description: editingCategory.description,
-      pricing_model: editingCategory.pricing_model,
-      hourly_rate: parseFloat(editingCategory.hourly_rate),
       base_price: parseFloat(editingCategory.base_price),
       active: editingCategory.active
     })
@@ -355,8 +347,6 @@ const SettingsPage = () => {
                           name: '', 
                           value: '', 
                           description: '',
-                          pricing_model: 'custom',
-                          hourly_rate: 120,
                           base_price: 0,
                           active: true 
                         })
@@ -454,46 +444,17 @@ const SettingsPage = () => {
                           />
                         </div>
 
-                        {/* Pricing Model */}
+                        {/* Base Price */}
                         <div>
-                          <Label className="text-black font-medium">Preismodell</Label>
-                          <select
-                            value={editingCategory.pricing_model || 'custom'}
-                            onChange={(e) => setEditingCategory({ ...editingCategory, pricing_model: e.target.value })}
-                            className="w-full h-10 rounded-md border border-slate-300 bg-white text-black px-3 py-2 mt-1"
-                          >
-                            <option value="hourly">Stündlich</option>
-                            <option value="fixed">Festpreis</option>
-                            <option value="custom">Custom</option>
-                          </select>
-                        </div>
-
-                        <div className="grid md:grid-cols-2 gap-4">
-                          {/* Hourly Rate */}
-                          <div>
-                            <Label className="text-black font-medium">Stundensatz (CHF)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={editingCategory.hourly_rate || 0}
-                              onChange={(e) => setEditingCategory({ ...editingCategory, hourly_rate: e.target.value })}
-                              placeholder="120"
-                              className="bg-white border-slate-300 mt-1 text-black"
-                            />
-                          </div>
-
-                          {/* Base Price */}
-                          <div>
-                            <Label className="text-black font-medium">Basispreis (CHF)</Label>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              value={editingCategory.base_price || 0}
-                              onChange={(e) => setEditingCategory({ ...editingCategory, base_price: e.target.value })}
-                              placeholder="0"
-                              className="bg-white border-slate-300 mt-1 text-black"
-                            />
-                          </div>
+                          <Label className="text-black font-medium">Basispreis (CHF)</Label>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            value={editingCategory.base_price || 0}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, base_price: e.target.value })}
+                            placeholder="0"
+                            className="bg-white border-slate-300 mt-1 text-black"
+                          />
                         </div>
 
                         {/* Active Toggle */}

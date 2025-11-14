@@ -110,14 +110,8 @@ const CreateOffer = () => {
       
       formData.serviceCategories.forEach(categoryValue => {
         const selectedService = services.find(s => s.value === categoryValue)
-        if (selectedService) {
-          if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-            totalPrice += Number(selectedService.base_price)
-          } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
-            // For hourly, calculate based on workers and estimated hours (e.g., 4 hours default)
-            const estimatedHours = 4
-            totalPrice += Number(selectedService.hourly_rate) * estimatedHours * (formData.workers || 2)
-          }
+        if (selectedService && selectedService.base_price) {
+          totalPrice += Number(selectedService.base_price)
         }
       })
       
@@ -269,9 +263,7 @@ const CreateOffer = () => {
         .update({
           name: editForm.name,
           description: editForm.description,
-          pricing_model: editForm.pricing_model,
-          base_price: editForm.pricing_model === 'fixed' ? editForm.base_price : null,
-          hourly_rate: editForm.pricing_model === 'hourly' ? editForm.hourly_rate : null
+          base_price: editForm.base_price
         })
         .eq('id', editingService.id)
 
@@ -286,14 +278,8 @@ const CreateOffer = () => {
         let totalPrice = 0
         formData.serviceCategories.forEach(categoryValue => {
           const selectedService = cats.find(s => s.value === categoryValue)
-          if (selectedService) {
-            if (selectedService.pricing_model === 'fixed' && selectedService.base_price) {
-              totalPrice += Number(selectedService.base_price)
-            } else if (selectedService.pricing_model === 'hourly' && selectedService.hourly_rate) {
-              const estimatedHours = 4
-              const workers = formData.workers || 2
-              totalPrice += Number(selectedService.hourly_rate) * estimatedHours * workers
-            }
+          if (selectedService && selectedService.base_price) {
+            totalPrice += Number(selectedService.base_price)
           }
         })
         
@@ -620,9 +606,7 @@ const CreateOffer = () => {
                           <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
                             <div className="font-medium text-slate-900">
                               {service.name}
-                              {service.hourly_rate && Number(service.hourly_rate) > 0
-                                ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
-                                : service.base_price && Number(service.base_price) > 0
+                              {service.base_price && Number(service.base_price) > 0
                                 ? ` - CHF ${Number(service.base_price).toFixed(2)}`
                                 : ''}
                             </div>
@@ -1310,43 +1294,16 @@ const CreateOffer = () => {
               </div>
 
               <div>
-                <Label className="text-slate-900 font-semibold block mb-2">Preismodell *</Label>
-                <select
-                  value={editForm.pricing_model}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, pricing_model: e.target.value }))}
-                  className="w-full h-10 rounded-md border border-slate-300 !bg-white !text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
-                >
-                  <option value="fixed" className="!bg-white !text-slate-900">Pauschalpreis</option>
-                  <option value="hourly" className="!bg-white !text-slate-900">Stundenlohn</option>
-                </select>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-slate-900 font-semibold block mb-2">Stundensatz (CHF/Std)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editForm.hourly_rate}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
-                    placeholder="120.00"
-                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-slate-900 font-semibold block mb-2">Basispreis (CHF)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editForm.base_price}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00"
-                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
-                  />
-                </div>
+                <Label className="text-slate-900 font-semibold block mb-2">Basispreis (CHF)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={editForm.base_price}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }))}
+                  placeholder="0.00"
+                  className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
+                />
               </div>
             </div>
 
