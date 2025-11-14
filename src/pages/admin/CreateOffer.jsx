@@ -16,7 +16,7 @@ import {
   getCompanySettings
 } from '@/lib/supabase'
 import { generateOfferNumber, generateCustomerNumber } from '@/lib/utils'
-import { ArrowLeft, Save, Search } from 'lucide-react'
+import { ArrowLeft, Save, Search, Settings, X } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
 const CreateOffer = () => {
@@ -31,6 +31,17 @@ const CreateOffer = () => {
   const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
   const [offerNumber, setOfferNumber] = useState('')
   const [vatEnabled, setVatEnabled] = useState(true)
+  
+  // Service category edit modal state
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editingService, setEditingService] = useState(null)
+  const [editForm, setEditForm] = useState({
+    name: '',
+    description: '',
+    pricing_model: 'fixed',
+    base_price: 0,
+    hourly_rate: 0
+  })
   
   const [formData, setFormData] = useState({
     // Document Details
@@ -220,6 +231,82 @@ const CreateOffer = () => {
   const formatTime = (timeString) => {
     if (!timeString) return ''
     return timeString.replace(':', '.')
+  }
+
+  const handleOpenEditModal = (service) => {
+    setEditingService(service)
+    setEditForm({
+      name: service.name,
+      description: service.description || '',
+      pricing_model: service.pricing_model || 'fixed',
+      base_price: service.base_price || 0,
+      hourly_rate: service.hourly_rate || 0
+    })
+    setShowEditModal(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
+    setEditingService(null)
+    setEditForm({
+      name: '',
+      description: '',
+      pricing_model: 'fixed',
+      base_price: 0,
+      hourly_rate: 0
+    })
+  }
+
+  const handleSaveServiceCategory = async () => {
+    if (!editForm.name.trim()) {
+      toast.error('Bitte geben Sie einen Namen ein')
+      return
+    }
+
+    try {
+      const { error } = await supabase
+        .from('service_categories')
+        .update({
+          name: editForm.name,
+          description: editForm.description,
+          pricing_model: editForm.pricing_model,
+          base_price: editForm.pricing_model === 'fixed' ? editForm.base_price : null,
+          hourly_rate: editForm.pricing_model === 'hourly' ? editForm.hourly_rate : null
+        })
+        .eq('id', editingService.id)
+
+      if (error) throw error
+
+      // Reload services
+      const { data: cats } = await getServiceCategories()
+      if (cats) setServices(cats)
+
+      toast.success('Service-Kategorie erfolgreich aktualisiert')
+      handleCloseEditModal()
+    } catch (error) {
+      console.error('Error updating service category:', error)
+      toast.error('Fehler beim Aktualisieren der Kategorie')
+    }
+  }
+
+  const handleToggleServiceActive = async (serviceId, currentActive) => {
+    try {
+      const { error } = await supabase
+        .from('service_categories')
+        .update({ active: !currentActive })
+        .eq('id', serviceId)
+
+      if (error) throw error
+
+      // Reload services
+      const { data: cats } = await getServiceCategories()
+      if (cats) setServices(cats)
+
+      toast.success(`Service-Kategorie ${!currentActive ? 'aktiviert' : 'deaktiviert'}`)
+    } catch (error) {
+      console.error('Error toggling service:', error)
+      toast.error('Fehler beim Ändern des Status')
+    }
   }
 
   const calculateAdditionalServicesTotal = () => {
@@ -492,7 +579,7 @@ const CreateOffer = () => {
                     {services.map(service => {
                       const isSelected = formData.serviceCategories.includes(service.value)
                       return (
-                        <div key={service.id} className="flex items-start space-x-3">
+                        <div key={service.id} className="flex items-start space-x-3 group">
                           <input
                             type="checkbox"
                             id={`service-${service.id}`}
@@ -518,6 +605,33 @@ const CreateOffer = () => {
                               <div className="text-xs text-slate-600 mt-0.5">{service.description}</div>
                             )}
                           </label>
+                          <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditModal(service)}
+                              className="p-1.5 rounded-md hover:bg-slate-100 text-slate-600 hover:text-brand-primary transition-colors"
+                              title="Bearbeiten"
+                            >
+                              <Settings className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleToggleServiceActive(service.id, service.active)
+                              }}
+                              className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+                                service.active !== false ? 'bg-brand-primary' : 'bg-slate-300'
+                              }`}
+                              title={service.active !== false ? 'Aktiv' : 'Inaktiv'}
+                            >
+                              <span
+                                className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${
+                                  service.active !== false ? 'translate-x-5' : 'translate-x-1'
+                                }`}
+                              />
+                            </button>
+                          </div>
                         </div>
                       )
                     })}
@@ -1134,6 +1248,102 @@ const CreateOffer = () => {
           </div>
         </form>
       </div>
+
+      {/* Edit Service Category Modal */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-900">Service-Kategorie bearbeiten</h2>
+              <button
+                onClick={handleCloseEditModal}
+                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <Label className="text-slate-700">Name *</Label>
+                <Input
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="z.B. Umzug"
+                  className="bg-white border-slate-200"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Beschreibung</Label>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Beschreibung der Dienstleistung..."
+                  className="w-full min-h-[80px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Preismodell *</Label>
+                <select
+                  value={editForm.pricing_model}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, pricing_model: e.target.value }))}
+                  className="w-full h-10 rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2"
+                >
+                  <option value="fixed">Pauschalpreis</option>
+                  <option value="hourly">Stundenlohn</option>
+                </select>
+              </div>
+
+              {editForm.pricing_model === 'fixed' ? (
+                <div>
+                  <Label className="text-slate-700">Pauschalpreis (CHF)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.base_price}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, base_price: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.00"
+                    className="bg-white border-slate-200"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Label className="text-slate-700">Stundenlohn (CHF/Std)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.hourly_rate}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
+                    placeholder="0.00"
+                    className="bg-white border-slate-200"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseEditModal}
+              >
+                Abbrechen
+              </Button>
+              <Button
+                type="button"
+                onClick={handleSaveServiceCategory}
+                className="bg-brand-primary hover:bg-[#d16635] text-slate-900"
+              >
+                Speichern
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
