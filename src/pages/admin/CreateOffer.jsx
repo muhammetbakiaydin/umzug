@@ -438,10 +438,28 @@ const CreateOffer = () => {
         assembly_note: formData.assemblyNote,
         flat_rate_price: formData.flatRatePrice,
         
-        // Extra services
+        // Extra services (keep old fields for compatibility + add new JSON field)
         extra_cleaning: formData.extraCleaning,
         extra_disposal: formData.extraDisposal,
         extra_packing: formData.extraPacking,
+        additional_services: JSON.stringify(
+          additionalServices
+            .filter(service => {
+              const fieldNameMap = {
+                'Reinigung': 'extraCleaning',
+                'Entsorgung': 'extraDisposal',
+                'Verpackungsservice': 'extraPacking'
+              }
+              const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+              return formData[fieldName] === true
+            })
+            .map(service => ({
+              id: service.id,
+              name: service.name,
+              price: service.price,
+              selected: true
+            }))
+        ),
         
         // Pricing
         subtotal: calculateSubtotal(),

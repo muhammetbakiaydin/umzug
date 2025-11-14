@@ -118,13 +118,36 @@ const OfferPrint = () => {
     })
   }
 
+  const getSelectedAdditionalServices = () => {
+    if (!offer) return []
+    
+    // Try to parse the new JSON format first
+    if (offer.additional_services) {
+      try {
+        const services = JSON.parse(offer.additional_services)
+        return services.filter(s => s.selected)
+      } catch (e) {
+        console.error('Error parsing additional_services:', e)
+      }
+    }
+    
+    // Fallback to old format for backward compatibility
+    const selected = []
+    if (offer.extra_cleaning) {
+      selected.push({ name: 'Reinigung', price: cleaningPrice })
+    }
+    if (offer.extra_disposal) {
+      selected.push({ name: 'Entsorgung', price: disposalPrice })
+    }
+    if (offer.extra_packing) {
+      selected.push({ name: 'Verpackungsservice', price: packingPrice })
+    }
+    return selected
+  }
+
   const calculateAdditionalServicesTotal = () => {
-    if (!offer) return 0
-    let total = 0
-    if (offer.extra_cleaning) total += cleaningPrice
-    if (offer.extra_disposal) total += disposalPrice
-    if (offer.extra_packing) total += packingPrice
-    return total
+    const services = getSelectedAdditionalServices()
+    return services.reduce((total, service) => total + Number(service.price || 0), 0)
   }
 
   const calculateSubtotal = () => {
@@ -665,52 +688,33 @@ const OfferPrint = () => {
       {/* Checkbox section */}
       <div className="checkbox-section no-break">
         <div className="checkbox-group">
-          <div className="checkbox-row">
-            <div className="checkbox-label">Reinigung:</div>
-            <div className="checkbox-options">
-              <div className="checkbox-option">
-                <span className={`checkbox ${offer.extra_cleaning ? 'checked' : ''}`}></span>
-                <span>JA</span>
+          {additionalServices.map((service) => {
+            const selectedServices = getSelectedAdditionalServices()
+            const isSelected = selectedServices.some(s => s.name === service.name)
+            
+            return (
+              <div key={service.id} className="checkbox-row">
+                <div className="checkbox-label">{service.name}:</div>
+                <div className="checkbox-options">
+                  <div className="checkbox-option">
+                    <span className={`checkbox ${isSelected ? 'checked' : ''}`}></span>
+                    <span>JA</span>
+                  </div>
+                  <div className="checkbox-option">
+                    <span className={`checkbox ${!isSelected ? 'checked' : ''}`}></span>
+                    <span>NEIN</span>
+                  </div>
+                </div>
               </div>
-              <div className="checkbox-option">
-                <span className={`checkbox ${!offer.extra_cleaning ? 'checked' : ''}`}></span>
-                <span>NEIN</span>
-              </div>
-            </div>
-          </div>
-          <div className="checkbox-row">
-            <div className="checkbox-label">Entsorgung:</div>
-            <div className="checkbox-options">
-              <div className="checkbox-option">
-                <span className={`checkbox ${offer.extra_disposal ? 'checked' : ''}`}></span>
-                <span>JA</span>
-              </div>
-              <div className="checkbox-option">
-                <span className={`checkbox ${!offer.extra_disposal ? 'checked' : ''}`}></span>
-                <span>NEIN</span>
-              </div>
-            </div>
-          </div>
-          <div className="checkbox-row">
-            <div className="checkbox-label">Verpackungsservice:</div>
-            <div className="checkbox-options">
-              <div className="checkbox-option">
-                <span className={`checkbox ${offer.extra_packing ? 'checked' : ''}`}></span>
-                <span>JA</span>
-              </div>
-              <div className="checkbox-option">
-                <span className={`checkbox ${!offer.extra_packing ? 'checked' : ''}`}></span>
-                <span>NEIN</span>
-              </div>
-            </div>
-          </div>
+            )
+          })}
         </div>
         <div>
           <div style={{ marginBottom: '6px' }}>
-            {offer.extra_cleaning && <div>Pauschalpreis Reinigung: {formatCurrency(cleaningPrice)}</div>}
-            {offer.extra_disposal && <div>Pauschalpreis Entsorgung: {formatCurrency(disposalPrice)}</div>}
-            {offer.extra_packing && <div>Pauschalpreis Verpackungsservice: {formatCurrency(packingPrice)}</div>}
-            {!offer.extra_cleaning && !offer.extra_disposal && !offer.extra_packing && (
+            {getSelectedAdditionalServices().map((service, index) => (
+              <div key={index}>Pauschalpreis {service.name}: {formatCurrency(service.price)}</div>
+            ))}
+            {getSelectedAdditionalServices().length === 0 && (
               <div style={{ color: '#666', fontStyle: 'italic' }}>Keine Zusatzleistungen gewählt</div>
             )}
           </div>
