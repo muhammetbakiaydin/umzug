@@ -416,11 +416,25 @@ const CreateOffer = () => {
       const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
       
       if (formData[fieldName] && service.price) {
-        total += Number(service.price)
+        total += Number(getAdjustedServicePrice(service))
       }
     })
     
     return total
+  }
+
+  const getAdjustedServicePrice = (service) => {
+    // For "Stundensatz" service, add CHF 30 for each worker above 2
+    if (service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')) {
+      const basePrice = Number(service.price) || 0
+      const workers = formData.workers || 2
+      if (workers > 2) {
+        const additionalWorkers = workers - 2
+        return basePrice + (additionalWorkers * 30)
+      }
+      return basePrice
+    }
+    return Number(service.price) || 0
   }
 
   const calculateSubtotal = () => {
@@ -540,7 +554,8 @@ const CreateOffer = () => {
             .map(service => ({
               id: service.id,
               name: service.name,
-              price: service.price,
+              price: getAdjustedServicePrice(service), // Use adjusted price
+              base_price: service.price, // Keep original base price
               selected: true
             }))
         ),
@@ -1239,6 +1254,9 @@ const CreateOffer = () => {
                   'Verpackungsservice': 'extraPacking'
                 }
                 const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+                const adjustedPrice = getAdjustedServicePrice(service)
+                const isStundensatz = service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')
+                const hasWorkerBonus = isStundensatz && formData.workers > 2
                 
                 return (
                   <div key={service.id} className="group flex items-center justify-between bg-slate-50 p-4 rounded-lg">
@@ -1249,7 +1267,12 @@ const CreateOffer = () => {
                         </Label>
                         {service.price && (
                           <span className="text-sm font-semibold text-brand-primary">
-                            CHF {Number(service.price).toFixed(2)}
+                            CHF {adjustedPrice.toFixed(2)}
+                            {hasWorkerBonus && (
+                              <span className="ml-1 text-xs text-slate-600">
+                                (Basis: {Number(service.price).toFixed(2)} + {((formData.workers - 2) * 30).toFixed(2)})
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>
@@ -1337,10 +1360,11 @@ const CreateOffer = () => {
                       const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
                       
                       if (formData[fieldName] && service.price) {
+                        const adjustedPrice = getAdjustedServicePrice(service)
                         return (
                           <div key={service.id} className="flex justify-between text-base">
                             <span>{service.name}:</span>
-                            <span className="font-mono">{formatCurrency(Number(service.price))}</span>
+                            <span className="font-mono">{formatCurrency(adjustedPrice)}</span>
                           </div>
                         )
                       }
