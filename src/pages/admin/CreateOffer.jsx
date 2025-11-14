@@ -620,9 +620,9 @@ const CreateOffer = () => {
                           <label htmlFor={`service-${service.id}`} className="flex-1 cursor-pointer">
                             <div className="font-medium text-slate-900">
                               {service.name}
-                              {service.pricing_model === 'hourly' && service.hourly_rate 
+                              {service.hourly_rate && Number(service.hourly_rate) > 0
                                 ? ` - CHF ${Number(service.hourly_rate).toFixed(2)}/Std`
-                                : service.pricing_model === 'fixed' && service.base_price
+                                : service.base_price && Number(service.base_price) > 0
                                 ? ` - CHF ${Number(service.base_price).toFixed(2)}`
                                 : ''}
                             </div>
@@ -1321,9 +1321,22 @@ const CreateOffer = () => {
                 </select>
               </div>
 
-              {editForm.pricing_model === 'fixed' ? (
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-slate-900 font-semibold block mb-2">Pauschalpreis (CHF)</Label>
+                  <Label className="text-slate-900 font-semibold block mb-2">Stundensatz (CHF/Std)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={editForm.hourly_rate}
+                    onChange={(e) => setEditForm(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
+                    placeholder="120.00"
+                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-slate-900 font-semibold block mb-2">Basispreis (CHF)</Label>
                   <Input
                     type="number"
                     min="0"
@@ -1334,20 +1347,7 @@ const CreateOffer = () => {
                     className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
                   />
                 </div>
-              ) : (
-                <div>
-                  <Label className="text-slate-900 font-semibold block mb-2">Stundenlohn (CHF/Std)</Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={editForm.hourly_rate}
-                    onChange={(e) => setEditForm(prev => ({ ...prev, hourly_rate: parseFloat(e.target.value) || 0 }))}
-                    placeholder="0.00"
-                    className="!bg-white !border-slate-300 !text-slate-900 placeholder:!text-slate-400"
-                  />
-                </div>
-              )}
+              </div>
             </div>
 
             <div className="sticky bottom-0 bg-slate-50 border-t border-slate-200 px-6 py-4 flex gap-3 justify-end">
