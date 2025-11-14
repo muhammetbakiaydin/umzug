@@ -14,38 +14,56 @@ const OfferPrint = () => {
   const [serviceCategories, setServiceCategories] = useState([])
 
   useEffect(() => {
-    loadOffer()
-    loadSettings()
-    loadAdditionalServices()
-    loadServiceCategories()
+    const loadData = async () => {
+      await loadOffer()
+      await loadSettings()
+      await loadAdditionalServices()
+      await loadServiceCategories()
+    }
+    loadData()
   }, [id])
 
   useEffect(() => {
     // Auto-trigger print dialog after content loads
     if (offer && !loading) {
-      // Set document title for PDF filename
-      document.title = `Offerte_${offer.offer_number}`
-      
-      const timer = setTimeout(() => {
-        window.print()
-      }, 500)
-      return () => clearTimeout(timer)
+      try {
+        // Set document title for PDF filename
+        document.title = `Offerte_${offer.offer_number || 'document'}`
+        
+        const timer = setTimeout(() => {
+          window.print()
+        }, 500)
+        return () => clearTimeout(timer)
+      } catch (err) {
+        console.error('Error setting up print:', err)
+      }
     }
   }, [offer, loading])
 
   const loadOffer = async () => {
-    setLoading(true)
-    const { data, error } = await getOffer(id)
-    
-    if (!error && data) {
-      console.log('Offer data loaded:', {
-        extra_cleaning: data.extra_cleaning,
-        extra_disposal: data.extra_disposal,
-        extra_packing: data.extra_packing
-      })
-      setOffer(data)
+    try {
+      setLoading(true)
+      const { data, error } = await getOffer(id)
+      
+      if (error) {
+        console.error('Error loading offer:', error)
+        setLoading(false)
+        return
+      }
+      
+      if (data) {
+        console.log('Offer data loaded:', {
+          extra_cleaning: data.extra_cleaning,
+          extra_disposal: data.extra_disposal,
+          extra_packing: data.extra_packing
+        })
+        setOffer(data)
+      }
+      setLoading(false)
+    } catch (err) {
+      console.error('Exception loading offer:', err)
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const loadSettings = async () => {
