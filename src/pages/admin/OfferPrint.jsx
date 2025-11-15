@@ -715,9 +715,21 @@ const OfferPrint = () => {
         </div>
         <div>
           <div style={{ marginBottom: '6px' }}>
-            {getSelectedAdditionalServices().map((service, index) => (
-              <div key={index}>Pauschalpreis {service.name}: {formatCurrency(service.price)}</div>
-            ))}
+            {getSelectedAdditionalServices().map((service, index) => {
+              const isStundensatz = service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')
+              const hasBreakdown = isStundensatz && service.base_price && service.price !== service.base_price
+              
+              return (
+                <div key={index}>
+                  Pauschalpreis {service.name}: {formatCurrency(service.price)}
+                  {hasBreakdown && (
+                    <span style={{ fontSize: '11px', color: '#666' }}>
+                      {' '}(Basis: {formatCurrency(service.base_price)} + {formatCurrency(service.price - service.base_price)})
+                    </span>
+                  )}
+                </div>
+              )
+            })}
             {getSelectedAdditionalServices().length === 0 && (
               <div style={{ color: '#666', fontStyle: 'italic' }}>Keine Zusatzleistungen gewählt</div>
             )}

@@ -124,10 +124,13 @@ const CreateOffer = () => {
         }
       })
       
-      // Only auto-fill if flatRatePrice is empty or 0
-      if (totalPrice > 0 && (!formData.flatRatePrice || formData.flatRatePrice === 0)) {
+      // Always update flatRatePrice when service categories change
+      if (totalPrice > 0) {
         handleChange('flatRatePrice', totalPrice)
       }
+    } else if (formData.serviceCategories && formData.serviceCategories.length === 0) {
+      // Reset to 0 if no categories selected
+      handleChange('flatRatePrice', 0)
     }
   }, [formData.serviceCategories, services, formData.workers])
 

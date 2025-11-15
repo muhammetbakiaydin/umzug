@@ -161,6 +161,25 @@ const OfferDetail = () => {
         extra_cleaning: formData.extraCleaning,
         extra_disposal: formData.extraDisposal,
         extra_packing: formData.extraPacking,
+        additional_services: JSON.stringify(
+          additionalServices
+            .filter(service => {
+              const fieldNameMap = {
+                'Reinigung': 'extraCleaning',
+                'Entsorgung': 'extraDisposal',
+                'Verpackungsservice': 'extraPacking'
+              }
+              const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+              return formData[fieldName] === true
+            })
+            .map(service => ({
+              id: service.id,
+              name: service.name,
+              price: getAdjustedServicePrice(service), // Use adjusted price
+              base_price: service.price, // Keep original base price
+              selected: true
+            }))
+        ),
         
         subtotal: calculateSubtotal(),
         tax_rate: vatEnabled ? vatRate : 0,
@@ -210,9 +229,19 @@ const OfferDetail = () => {
     return timeString.replace(':', '.')
   }
 
-  const calculateAdditionalServicesTotal = () => {
-    let total = 0
+  const getSelectedAdditionalServices = () => {
+    // First try to get from saved JSON which has adjusted prices
+    if (offer && offer.additional_services) {
+      try {
+        const services = JSON.parse(offer.additional_services)
+        return services
+      } catch (e) {
+        console.error('Error parsing additional_services:', e)
+      }
+    }
     
+    // Fallback to old format
+    const selected = []
     additionalServices.forEach((service) => {
       const fieldNameMap = {
         'Reinigung': 'extraCleaning',
@@ -220,15 +249,57 @@ const OfferDetail = () => {
         'Verpackungsservice': 'extraPacking'
       }
       const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+      const isChecked = editMode ? formData[fieldName] : offer?.[fieldName.replace(/([A-Z])/g, '_$1').toLowerCase()]
       
-      const isChecked = editMode ? formData[fieldName] : offer[fieldName.replace(/([A-Z])/g, '_$1').toLowerCase()]
-      
-      if (isChecked && service.price) {
-        total += Number(service.price)
+      if (isChecked) {
+        selected.push({
+          id: service.id,
+          name: service.name,
+          price: service.price,
+          base_price: service.price,
+          selected: true
+        })
       }
     })
+    return selected
+  }
+
+  const getAdjustedServicePrice = (service) => {
+    // For "Stundensatz" service, add CHF 30 for each worker above 2
+    if (service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')) {
+      const basePrice = Number(service.price) || 0
+      const workers = formData.workers || 2
+      if (workers > 2) {
+        const additionalWorkers = workers - 2
+        return basePrice + (additionalWorkers * 30)
+      }
+      return basePrice
+    }
+    return Number(service.price) || 0
+  }
+
+  const calculateAdditionalServicesTotal = () => {
+    // When in edit mode, recalculate with adjusted prices
+    if (editMode) {
+      let total = 0
+      additionalServices.forEach((service) => {
+        const fieldNameMap = {
+          'Reinigung': 'extraCleaning',
+          'Entsorgung': 'extraDisposal',
+          'Verpackungsservice': 'extraPacking'
+        }
+        const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
+        
+        if (formData[fieldName]) {
+          total += getAdjustedServicePrice(service)
+        }
+      })
+      return total
+    }
     
-    return total
+    // When viewing, use saved prices from JSON
+    const services = getSelectedAdditionalServices()
+    return services.reduce((total, service) => total + Number(service.price || 0), 0)
   }
 
   const calculateSubtotal = () => {
@@ -1339,24 +1410,23 @@ const OfferDetail = () => {
                 </div>
                 {calculateAdditionalServicesTotal() > 0 && (
                   <>
-                    {additionalServices.map((service) => {
-                      const fieldNameMap = {
-                        'Reinigung': 'extraCleaning',
-                        'Entsorgung': 'extraDisposal',
-                        'Verpackungsservice': 'extraPacking'
-                      }
-                      const fieldName = fieldNameMap[service.name] || `extra${service.name.replace(/\s+/g, '')}`
-                      const isChecked = editMode ? formData[fieldName] : offer[fieldName.replace(/([A-Z])/g, '_$1').toLowerCase()]
+                    {getSelectedAdditionalServices().map((service) => {
+                      const isStundensatz = service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')
+                      const hasBreakdown = isStundensatz && service.base_price && service.price !== service.base_price
                       
-                      if (isChecked && service.price) {
-                        return (
-                          <div key={service.id} className="flex justify-between text-base">
-                            <span>{service.name}:</span>
-                            <span className="font-mono">{formatCurrency(Number(service.price))}</span>
-                          </div>
-                        )
-                      }
-                      return null
+                      return (
+                        <div key={service.id} className="flex justify-between text-base">
+                          <span>
+                            {service.name}:
+                            {hasBreakdown && (
+                              <span className="ml-2 text-xs text-slate-600">
+                                (Basis: {formatCurrency(service.base_price)} + {formatCurrency(service.price - service.base_price)})
+                              </span>
+                            )}
+                          </span>
+                          <span className="font-mono">{formatCurrency(Number(service.price))}</span>
+                        </div>
+                      )
                     })}
                     <div className="flex justify-between text-base font-semibold border-t border-slate-200 pt-2">
                       <span>Zwischensumme:</span>
