@@ -378,7 +378,7 @@ const ReceiptPrint = () => {
             <div>Tulpenweg 22</div>
             <div>3250 Lyss</div>
             <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ height: '20px' }}></div>
+            <div style={{ height: '20px' }}></div> <br /> <br />
             <div><strong>Währung Betrag</strong></div>
             <div>CHF</div>
           </div>
@@ -399,7 +399,7 @@ const ReceiptPrint = () => {
                 <div>Tulpenweg 22</div>
                 <div>3250 Lyss</div>
                 <div style={{ marginTop: '5px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-                <div style={{ height: '15px' }}></div>
+                <div style={{ height: '15px' }}></div><br /> <br />
                 <div><strong>Währung Betrag</strong></div>
                 <div>CHF</div>
               </div>

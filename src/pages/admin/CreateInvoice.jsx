@@ -263,10 +263,10 @@ const CreateInvoice = () => {
               <div>
                 <Label className="text-slate-700">Für (Service-Datum)</Label>
                 <Input
+                  type="date"
                   className="bg-white border-slate-200 text-slate-900"
                   value={formData.serviceDate}
                   onChange={(e) => handleChange('serviceDate', e.target.value)}
-                  placeholder="z.B. Umzug 23.07.2025"
                 />
               </div>
             </div>
