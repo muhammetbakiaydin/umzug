@@ -87,16 +87,22 @@ const ReceiptPrint = () => {
         }
         * {
           color: #000 !important;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        body, html {
+          background: white !important;
         }
         .print-page {
           width: 210mm;
           min-height: 297mm;
           margin: 0 auto;
-          background: white;
+          background: white !important;
           font-family: Arial, sans-serif;
           padding: 20mm;
           box-sizing: border-box;
-          color: #000;
+          color: #000 !important;
+          position: relative;
         }
         .header-grid {
           display: grid;
@@ -213,21 +219,26 @@ const ReceiptPrint = () => {
         .footer {
           margin-top: 60px;
           font-size: 10px;
-          color: #000;
+          color: #000 !important;
           line-height: 1.6;
           border-top: 1px solid #000;
           padding-top: 20px;
-          text-align: center;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+        .footer-text {
+          flex: 1;
+          color: #000 !important;
+        }
+        .qr-code-section {
+          margin-left: 20px;
+          flex-shrink: 0;
         }
         .vat-exempt-note {
           font-size: 10px;
           font-style: italic;
-          color: #000;
-        }
-        .qr-code-section {
-          position: absolute;
-          bottom: 20mm;
-          right: 20mm;
+          color: #000 !important;
         }
       `}</style>
 
@@ -349,28 +360,25 @@ const ReceiptPrint = () => {
 
       {/* Footer */}
       <div className="footer">
-        <div style={{ marginBottom: '10px' }}>
-          <strong>{company?.company_name || 'Firma'}</strong>
+        <div className="footer-text">
+          <div style={{ marginBottom: '10px' }}>
+            <strong>Umzug UNIT GmbH</strong>
+          </div>
+          <div>Tulpenweg 22</div>
+          <div>3250 Lyss</div>
+          <div>Tel: 032 310 70 60</div>
+          <div>Tel: 078 935 82 82</div>
+          <div>info@umzug-unit.ch</div>
         </div>
-        {company?.bank_name && (
-          <div style={{ marginBottom: '5px' }}>
-            Bank: {company.bank_name} | IBAN: {company.iban || '—'} | BIC: {company.bic || '—'}
-          </div>
-        )}
-        {company?.uid && (
-          <div>
-            UID: {company.uid} | Handelsregister: {company.commercial_register || '—'}
-          </div>
-        )}
-      </div>
-
-      {/* QR Code */}
-      <div className="qr-code-section">
-        <img 
-          src="/QR.png" 
-          alt="QR Code" 
-          style={{ width: '80px', height: '80px' }}
-        />
+        
+        {/* QR Code */}
+        <div className="qr-code-section">
+          <img 
+            src="/QR.png" 
+            alt="QR Code" 
+            style={{ width: '80px', height: '80px' }}
+          />
+        </div>
       </div>
     </div>
   )
