@@ -259,7 +259,9 @@ const OffersPage = () => {
                     
                     <div className="col-span-2 flex items-center">
                       <span className="text-sm text-slate-600">
-                        {offer.moving_date ? new Date(offer.moving_date).toLocaleDateString('de-CH') : 'N/A'}
+                        {offer.document_type === 'receipt' || offer.document_type === 'invoice' 
+                          ? (offer.offer_date ? new Date(offer.offer_date).toLocaleDateString('de-CH') : 'N/A')
+                          : (offer.moving_date ? new Date(offer.moving_date).toLocaleDateString('de-CH') : 'N/A')}
                       </span>
                     </div>
                     
@@ -307,10 +309,12 @@ const OffersPage = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-medium text-slate-900 font-mono">
-                        {offer.offer_number}
+                        {offer.document_type === 'receipt' ? offer.receipt_number :
+                         offer.document_type === 'invoice' ? offer.invoice_number :
+                         offer.offer_number}
                       </div>
                       <div className="text-xs text-slate-600 truncate">
-                        {offer.customer_first_name} {offer.customer_last_name}
+                        {offer.from_first_name} {offer.from_last_name}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs font-semibold text-slate-900">
