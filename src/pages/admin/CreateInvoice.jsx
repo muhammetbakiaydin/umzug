@@ -33,15 +33,18 @@ const CreateInvoice = () => {
   const [formData, setFormData] = useState({
     invoiceNumber: '',
     invoiceDate: new Date().toISOString().split('T')[0],
-    dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+    serviceDate: '', // "Für:" field (e.g., "Umzug 23.07.2025")
     customerName: '',
-    customerAddress: '',
+    customerStreet: '',
+    customerZip: '',
     customerCity: '',
-    lineItems: [
-      { description: '', quantity: 1, unitPrice: 0, total: 0 }
+    invoiceRows: [
+      { description: '', hours: '', price: '', amount: '' }
     ],
-    paymentTerms: '30 Tage netto',
-    notes: '',
+    isVatApplicable: true,
+    vatRate: 8.1,
+    paymentTerms: 'Zahlbar innert 5 Tagen',
+    bankRecipientText: 'Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN: CH39 0020 4204 2144 9601 C',
   })
 
   useEffect(() => {
@@ -52,7 +55,10 @@ const CreateInvoice = () => {
     // Load VAT rate from company settings
     const { data: settings } = await getCompanySettings()
     if (settings) {
-      if (settings.vat_rate) setVatRate(settings.vat_rate)
+      if (settings.vat_rate) {
+        setVatRate(settings.vat_rate)
+        setFormData(prev => ({ ...prev, vatRate: settings.vat_rate }))
+      }
       if (settings.vat_enabled !== undefined) setVatEnabled(settings.vat_enabled)
     }
     
@@ -83,48 +89,46 @@ const CreateInvoice = () => {
     setFormData(prev => ({
       ...prev,
       customerName: `${customer.first_name} ${customer.last_name}`,
-      customerAddress: customer.address_street || '',
-      customerCity: `${customer.address_zip || ''} ${customer.address_city || ''}`.trim(),
+      customerStreet: customer.address_street || '',
+      customerZip: customer.address_zip || '',
+      customerCity: customer.address_city || '',
     }))
     setSearchTerm(`${customer.first_name} ${customer.last_name}`)
     setShowCustomerDropdown(false)
   }
 
-  const addLineItem = () => {
+  const addInvoiceRow = () => {
     setFormData(prev => ({
       ...prev,
-      lineItems: [...prev.lineItems, { description: '', quantity: 1, unitPrice: 0, total: 0 }]
+      invoiceRows: [...prev.invoiceRows, { description: '', hours: '', price: '', amount: '' }]
     }))
   }
 
-  const removeLineItem = (index) => {
+  const removeInvoiceRow = (index) => {
     setFormData(prev => ({
       ...prev,
-      lineItems: prev.lineItems.filter((_, i) => i !== index)
+      invoiceRows: prev.invoiceRows.filter((_, i) => i !== index)
     }))
   }
 
-  const updateLineItem = (index, field, value) => {
+  const updateInvoiceRow = (index, field, value) => {
     setFormData(prev => {
-      const newLineItems = [...prev.lineItems]
-      newLineItems[index][field] = value
-      
-      // Recalculate total for this line item
-      if (field === 'quantity' || field === 'unitPrice') {
-        newLineItems[index].total = newLineItems[index].quantity * newLineItems[index].unitPrice
-      }
-      
-      return { ...prev, lineItems: newLineItems }
+      const newRows = [...prev.invoiceRows]
+      newRows[index][field] = value
+      return { ...prev, invoiceRows: newRows }
     })
   }
 
   const calculateSubtotal = () => {
-    return formData.lineItems.reduce((sum, item) => sum + item.total, 0)
+    return formData.invoiceRows.reduce((sum, row) => {
+      const amount = parseFloat(row.amount) || 0
+      return sum + amount
+    }, 0)
   }
 
   const calculateVAT = () => {
-    if (!vatEnabled) return 0
-    return (calculateSubtotal() * vatRate) / 100
+    if (!formData.isVatApplicable) return 0
+    return (calculateSubtotal() * formData.vatRate) / 100
   }
 
   const calculateTotal = () => {
@@ -154,22 +158,31 @@ const CreateInvoice = () => {
         offer_date: formData.invoiceDate,
         from_first_name: formData.customerName.split(' ')[0] || '',
         from_last_name: formData.customerName.split(' ').slice(1).join(' ') || '',
-        from_street: formData.customerAddress,
+        from_street: formData.customerStreet,
+        from_zip: formData.customerZip,
         from_city: formData.customerCity,
-        notes: formData.notes,
+        // Store all invoice-specific data in notes as JSON
+        notes: JSON.stringify({
+          serviceDate: formData.serviceDate,
+          customerName: formData.customerName,
+          customerStreet: formData.customerStreet,
+          customerZip: formData.customerZip,
+          customerCity: formData.customerCity,
+          invoiceRows: formData.invoiceRows,
+          isVatApplicable: formData.isVatApplicable,
+          vatRate: formData.vatRate,
+          paymentTerms: formData.paymentTerms,
+          bankRecipientText: formData.bankRecipientText,
+        }),
         flat_rate_price: subtotal,
         subtotal: subtotal,
-        tax_rate: vatEnabled ? vatRate : 0,
+        tax_rate: formData.isVatApplicable ? formData.vatRate : 0,
         tax_amount: vatAmount,
         total: total,
         status: 'sent',
         category: 'rechnung',
         created_by_user_id: user?.id,
         created_by_name: user?.email,
-        // Store line items as JSON in notes or a custom field
-        line_items_json: JSON.stringify(formData.lineItems),
-        payment_terms: formData.paymentTerms,
-        due_date: formData.dueDate,
       }
 
       const { data: invoice, error: invoiceError } = await createOffer(invoiceData)
@@ -178,6 +191,8 @@ const CreateInvoice = () => {
         toast.error('Fehler beim Erstellen der Rechnung: ' + invoiceError.message)
       } else {
         toast.success('Rechnung erfolgreich erstellt!')
+        // Open PDF in new window
+        window.open(`/admin/invoices/${invoice.id}/print`, '_blank')
         navigate('/admin/offers')
       }
     } catch (error) {
@@ -219,7 +234,7 @@ const CreateInvoice = () => {
 
           {/* Rechnungsdetails */}
           <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-4">Rechnungsdetails</h3>
+            <h3 className="text-base font-semibold text-slate-900 mb-4">Dokumentinformationen</h3>
             
             <div className="grid md:grid-cols-3 gap-4 mb-4">
               <div>
@@ -242,25 +257,14 @@ const CreateInvoice = () => {
                 />
               </div>
               <div>
-                <Label className="text-slate-700">Fälligkeitsdatum *</Label>
+                <Label className="text-slate-700">Für (Service-Datum)</Label>
                 <Input
-                  type="date"
                   className="bg-white border-slate-200 text-slate-900"
-                  value={formData.dueDate}
-                  onChange={(e) => handleChange('dueDate', e.target.value)}
-                  required
+                  value={formData.serviceDate}
+                  onChange={(e) => handleChange('serviceDate', e.target.value)}
+                  placeholder="z.B. Umzug 23.07.2025"
                 />
               </div>
-            </div>
-
-            <div>
-              <Label className="text-slate-700">Zahlungsbedingungen</Label>
-              <Input
-                className="bg-white border-slate-200 text-slate-900"
-                value={formData.paymentTerms}
-                onChange={(e) => handleChange('paymentTerms', e.target.value)}
-                placeholder="z.B. 30 Tage netto"
-              />
             </div>
           </div>
 
@@ -305,34 +309,45 @@ const CreateInvoice = () => {
                   className="bg-white border-slate-200 text-slate-900"
                   value={formData.customerName}
                   onChange={(e) => handleChange('customerName', e.target.value)}
-                  placeholder="Max Mustermann"
+                  placeholder="ESPRIT Network AG oder Herr Tim Känzig"
                   required
                 />
               </div>
 
               <div>
-                <Label className="text-slate-700">Adresse</Label>
+                <Label className="text-slate-700">Strasse + Nr.</Label>
                 <Input
                   className="bg-white border-slate-200 text-slate-900"
-                  value={formData.customerAddress}
-                  onChange={(e) => handleChange('customerAddress', e.target.value)}
-                  placeholder="Musterstrasse 123"
+                  value={formData.customerStreet}
+                  onChange={(e) => handleChange('customerStreet', e.target.value)}
+                  placeholder="Poststrasse 2"
                 />
               </div>
 
-              <div>
-                <Label className="text-slate-700">PLZ / Stadt</Label>
-                <Input
-                  className="bg-white border-slate-200 text-slate-900"
-                  value={formData.customerCity}
-                  onChange={(e) => handleChange('customerCity', e.target.value)}
-                  placeholder="8000 Zürich"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-slate-700">PLZ</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900"
+                    value={formData.customerZip}
+                    onChange={(e) => handleChange('customerZip', e.target.value)}
+                    placeholder="4500"
+                  />
+                </div>
+                <div>
+                  <Label className="text-slate-700">Stadt</Label>
+                  <Input
+                    className="bg-white border-slate-200 text-slate-900"
+                    value={formData.customerCity}
+                    onChange={(e) => handleChange('customerCity', e.target.value)}
+                    placeholder="Solothurn"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Positionen */}
+          {/* Rechnungspositionen */}
           <div className="bg-white rounded-lg border border-slate-200 p-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-base font-semibold text-slate-900">Rechnungspositionen</h3>
@@ -340,7 +355,7 @@ const CreateInvoice = () => {
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={addLineItem}
+                onClick={addInvoiceRow}
                 className="flex items-center gap-2"
               >
                 <Plus className="h-4 w-4" />
@@ -349,58 +364,54 @@ const CreateInvoice = () => {
             </div>
             
             <div className="space-y-4">
-              {formData.lineItems.map((item, index) => (
+              {formData.invoiceRows.map((row, index) => (
                 <div key={index} className="grid grid-cols-12 gap-3 items-end border-b pb-4 last:border-b-0">
                   <div className="col-span-5">
                     <Label className="text-slate-700 text-xs">Beschreibung</Label>
-                    <Input
-                      className="bg-white border-slate-200 text-slate-900"
-                      value={item.description}
-                      onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                      placeholder="Leistungsbeschreibung"
-                      required
+                    <textarea
+                      className="w-full min-h-[60px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 text-sm"
+                      value={row.description}
+                      onChange={(e) => updateInvoiceRow(index, 'description', e.target.value)}
+                      placeholder="z.B. 1-LW 25m², 3-Mitarbeiter, 8.1% MwSt"
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label className="text-slate-700 text-xs">Menge</Label>
+                    <Label className="text-slate-700 text-xs">Stunden</Label>
+                    <Input
+                      className="bg-white border-slate-200 text-slate-900"
+                      value={row.hours}
+                      onChange={(e) => updateInvoiceRow(index, 'hours', e.target.value)}
+                      placeholder="optional"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-slate-700 text-xs">Preis</Label>
+                    <Input
+                      className="bg-white border-slate-200 text-slate-900"
+                      value={row.price}
+                      onChange={(e) => updateInvoiceRow(index, 'price', e.target.value)}
+                      placeholder="Pauschalpreis"
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-slate-700 text-xs">Betrag (CHF)</Label>
                     <Input
                       type="number"
                       min="0"
                       step="0.01"
                       className="bg-white border-slate-200 text-slate-900"
-                      value={item.quantity}
-                      onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-slate-700 text-xs">Einzelpreis</Label>
-                    <Input
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      className="bg-white border-slate-200 text-slate-900"
-                      value={item.unitPrice}
-                      onChange={(e) => updateLineItem(index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                      required
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-slate-700 text-xs">Gesamt</Label>
-                    <Input
-                      className="bg-slate-50 border-slate-200 text-slate-500"
-                      value={formatCurrency(item.total)}
-                      readOnly
-                      disabled
+                      value={row.amount}
+                      onChange={(e) => updateInvoiceRow(index, 'amount', e.target.value)}
+                      placeholder="500"
                     />
                   </div>
                   <div className="col-span-1 flex justify-end">
-                    {formData.lineItems.length > 1 && (
+                    {formData.invoiceRows.length > 1 && (
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeLineItem(index)}
+                        onClick={() => removeInvoiceRow(index)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
                         <Trash2 className="h-4 w-4" />
@@ -412,36 +423,88 @@ const CreateInvoice = () => {
             </div>
           </div>
 
-          {/* Preiskalkulation */}
-          <div className="bg-white rounded-lg border-2 border-brand-primary/20 p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-4">Preiskalkulation</h3>
-            <div className="space-y-3 text-slate-700">
-              <div className="flex justify-between text-base">
-                <span>Zwischensumme:</span>
-                <span className="font-mono">{formatCurrency(calculateSubtotal())}</span>
+          {/* MwSt & Zahlungsbedingungen */}
+          <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <h3 className="text-base font-semibold text-slate-900 mb-4">MwSt & Zahlungsbedingungen</h3>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="isVatApplicable"
+                  className="w-5 h-5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary"
+                  checked={formData.isVatApplicable}
+                  onChange={(e) => handleChange('isVatApplicable', e.target.checked)}
+                />
+                <Label htmlFor="isVatApplicable" className="text-slate-700 font-medium cursor-pointer">
+                  MwSt anwendbar
+                </Label>
               </div>
-              {vatEnabled && (
-                <div className="flex justify-between text-base">
-                  <span>MwSt. ({vatRate}%):</span>
-                  <span className="font-mono">{formatCurrency(calculateVAT())}</span>
+
+              {formData.isVatApplicable && (
+                <div>
+                  <Label className="text-slate-700">MwSt-Satz (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    className="bg-white border-slate-200 text-slate-900"
+                    value={formData.vatRate}
+                    onChange={(e) => handleChange('vatRate', parseFloat(e.target.value) || 0)}
+                  />
                 </div>
               )}
-              <div className="flex justify-between font-bold text-xl text-slate-900 border-t-2 border-slate-300 pt-3">
-                <span>Total:</span>
-                <span className="font-mono text-brand-primary">{formatCurrency(calculateTotal())}</span>
+
+              <div>
+                <Label className="text-slate-700">Zahlungsbedingungen</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900"
+                  value={formData.paymentTerms}
+                  onChange={(e) => handleChange('paymentTerms', e.target.value)}
+                  placeholder="z.B. Zahlbar innert 5 Tagen"
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Zahlungsempfänger</Label>
+                <Input
+                  className="bg-white border-slate-200 text-slate-900"
+                  value={formData.bankRecipientText}
+                  onChange={(e) => handleChange('bankRecipientText', e.target.value)}
+                  placeholder="Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN..."
+                />
               </div>
             </div>
           </div>
 
-          {/* Notizen */}
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <h3 className="text-base font-semibold text-slate-900 mb-4">Notizen (optional)</h3>
-            <textarea
-              className="w-full min-h-[100px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2"
-              value={formData.notes}
-              onChange={(e) => handleChange('notes', e.target.value)}
-              placeholder="Zusätzliche Bemerkungen..."
-            />
+          {/* Preiskalkulation */}
+          <div className="bg-white rounded-lg border-2 border-brand-primary/20 p-6">
+            <h3 className="text-base font-semibold text-slate-900 mb-4">Preiskalkulation</h3>
+            <div className="space-y-3 text-slate-700">
+              {formData.isVatApplicable ? (
+                <>
+                  <div className="flex justify-between font-bold text-xl text-slate-900">
+                    <span>SUMME inkl. {formData.vatRate}% MwSt:</span>
+                    <span className="font-mono text-brand-primary">{formatCurrency(calculateTotal())}</span>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    <div className="flex justify-between">
+                      <span>Zwischensumme:</span>
+                      <span className="font-mono">{formatCurrency(calculateSubtotal())}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>MwSt. ({formData.vatRate}%):</span>
+                      <span className="font-mono">{formatCurrency(calculateVAT())}</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between font-bold text-xl text-slate-900">
+                  <span>Total CHF:</span>
+                  <span className="font-mono text-brand-primary">{formatCurrency(calculateSubtotal())}</span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Submit Button */}
@@ -453,7 +516,7 @@ const CreateInvoice = () => {
               disabled={loading}
             >
               <Save className="mr-2 h-5 w-5" />
-              {loading ? 'Erstelle Rechnung...' : 'Rechnung erstellen'}
+              {loading ? 'Erstelle Rechnung...' : 'Rechnung erstellen (PDF)'}
             </Button>
           </div>
         </form>

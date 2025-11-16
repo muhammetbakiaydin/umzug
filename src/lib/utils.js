@@ -26,15 +26,24 @@ export async function generateOfferNumber(supabase) {
   const { data, error } = await supabase
     .from('offers')
     .select('offer_number')
-    .order('offer_number', { ascending: false })
+    .not('offer_number', 'is', null)
+    .order('created_at', { ascending: false })
     .limit(1)
 
   if (error || !data || data.length === 0) {
-    return '10001'
+    return '0010001'
   }
 
-  const lastNumber = parseInt(data[0].offer_number)
-  return String(lastNumber + 1).padStart(5, '0')
+  // Extract number from format like "0010001" or just "10001"
+  const lastOfferNumber = data[0].offer_number
+  const numberMatch = lastOfferNumber.match(/\d+/)
+  const lastNumber = numberMatch ? parseInt(numberMatch[0]) : 10000
+  
+  if (isNaN(lastNumber)) {
+    return '0010001'
+  }
+  
+  return '00' + String(lastNumber + 1)
 }
 
 export async function generateReceiptNumber(supabase) {
