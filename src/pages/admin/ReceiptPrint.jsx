@@ -216,25 +216,6 @@ const ReceiptPrint = () => {
           margin-top: 5px;
           color: #000;
         }
-        .footer {
-          margin-top: 60px;
-          font-size: 10px;
-          color: #000 !important;
-          line-height: 1.6;
-          border-top: 1px solid #000;
-          padding-top: 20px;
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-        }
-        .footer-text {
-          flex: 1;
-          color: #000 !important;
-        }
-        .qr-code-section {
-          margin-left: 20px;
-          flex-shrink: 0;
-        }
         .vat-exempt-note {
           font-size: 10px;
           font-style: italic;
@@ -250,14 +231,19 @@ const ReceiptPrint = () => {
             alt="Company Logo" 
             style={{ maxWidth: '180px', marginBottom: '15px' }}
           />
-          <div className="company-name">{company?.company_name || 'Firma'}</div>
-          <div>{company?.address_street}</div>
-          <div>{company?.address_zip} {company?.address_city}</div>
-          <div>Tel: {company?.phone}</div>
-          <div>Email: {company?.email}</div>
-          {company?.website && <div>Web: {company.website}</div>}
+          <div className="company-name">Umzug UNIT GmbH</div>
+          <div>Tulpenweg 22</div>
+          <div>3250 Lyss</div>
+          <div>Tel: 032 310 70 60</div>
+          <div>Tel: 078 935 82 82</div>
+          <div>info@umzug-unit.ch</div>
         </div>
         <div className="customer-block">
+          <img 
+            src="/QR.png" 
+            alt="QR Code" 
+            style={{ width: '100px', height: '100px', marginBottom: '15px' }}
+          />
           <div className="customer-label">An:</div>
           <div><strong>{receiptData.customerName || '—'}</strong></div>
           {receiptData.customerStreet && <div>{receiptData.customerStreet}</div>}
@@ -355,29 +341,6 @@ const ReceiptPrint = () => {
           <div className="signature-name">
             {receiptData.customerSignatureName || '—'}
           </div>
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="footer">
-        <div className="footer-text">
-          <div style={{ marginBottom: '10px' }}>
-            <strong>Umzug UNIT GmbH</strong>
-          </div>
-          <div>Tulpenweg 22</div>
-          <div>3250 Lyss</div>
-          <div>Tel: 032 310 70 60</div>
-          <div>Tel: 078 935 82 82</div>
-          <div>info@umzug-unit.ch</div>
-        </div>
-        
-        {/* QR Code */}
-        <div className="qr-code-section">
-          <img 
-            src="/QR.png" 
-            alt="QR Code" 
-            style={{ width: '80px', height: '80px' }}
-          />
         </div>
       </div>
     </div>
