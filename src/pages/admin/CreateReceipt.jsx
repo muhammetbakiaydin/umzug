@@ -148,6 +148,7 @@ const CreateReceipt = () => {
     try {
       const receiptData = {
         document_type: 'receipt',
+        offer_number: formData.receiptNumber, // Use receipt number as offer_number since it's required
         receipt_number: formData.receiptNumber,
         offer_date: formData.receiptDate,
         // Customer info
