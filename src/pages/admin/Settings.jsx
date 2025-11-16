@@ -29,6 +29,25 @@ const SettingsPage = () => {
   const [editingVat, setEditingVat] = useState(false)
   const [vatRate, setVatRate] = useState(8.1)
   
+  // PDF Terms/Policy Sections
+  const [editingTerms, setEditingTerms] = useState(false)
+  const [pdfTerms, setPdfTerms] = useState({
+    insurance_title: 'Versicherungen',
+    insurance_text: 'Die Transportversicherung ist im Preis inbegriffen mit einem Deckungsumfang von CHF 40\'000.00. Weiter haftet unsere Betriebshaftpflichtversicherung bei Schäden bis zu CHF 100\'000.- Bestehende Schäden am Mobiliar sind dem Umzugschef vor dem Umzug mitzuteilen.',
+    preparation_title: 'Vorbereitung',
+    preparation_text: 'Das Verpacken von kleineren Gegenständen wird durch den Kunden in Kartonschachteln bereitgestellt. Grösseres Umzugsgut wie TV und Sofa wird durch die Firma Umzug UNIT GmbH verpackt.',
+    materials_title: 'Verbrauchsmaterial',
+    materials_text: 'Umzugsdecken werden vor Ort gratis zur Verfügung gestellt, damit das Umzugsgut gut gesichert wird. Verbrauchsmaterial wie Folien oder Bodenfliesen werden verrechnet, sowie das Depot für die Umzugskisten.',
+    breaks_title: 'Pausen',
+    breaks_text: 'Vor- und Nachmittag: 15 Minuten\nMittagspause: 30 Minuten',
+    information_title: 'Information',
+    information_text: 'Die Offerte setzt voraus, dass beide Standorte frei zugänglich und über das schweizer Strassennetz erreichbar sind. Ist der Lieferwert mit normalen Umzugswagen nicht oder nur erschwert zugänglich, so erfolgt die Lieferung bis zur nächsten allgemein zugänglichen Stelle die ohne Zusatzaufwand oder Zusatzkosten erreicht werden kann.',
+    damages_title: 'Schäden',
+    damages_text: 'Schäden müssen gemäss OR Art.452 Absatz 1 sofort nach dem Umzug am Umzugsladearbeiter mitgeteilt und schriftlich auf dem Schadenmeldungsformular mit dem Unterschrift des Kunden und des Umzugschefs festgehalten werden.',
+    payment_title: 'Zahlungsbedingungen',
+    payment_text: 'Barzahlung am Abladeort nach dem Umzug an den Teamleiter. Dies betrifft den Betrag für den gesammten Umzug und Reinigung.'
+  })
+  
   // Service Categories
   const [serviceCategories, setServiceCategories] = useState([])
   const [editingCategory, setEditingCategory] = useState(null)
@@ -59,6 +78,26 @@ const SettingsPage = () => {
     if (settings) {
       setCompanySettings(settings)
       setVatRate(settings.vat_rate || 7.7)
+      
+      // Load PDF terms if they exist
+      if (settings.insurance_title) {
+        setPdfTerms({
+          insurance_title: settings.insurance_title || 'Versicherungen',
+          insurance_text: settings.insurance_text || '',
+          preparation_title: settings.preparation_title || 'Vorbereitung',
+          preparation_text: settings.preparation_text || '',
+          materials_title: settings.materials_title || 'Verbrauchsmaterial',
+          materials_text: settings.materials_text || '',
+          breaks_title: settings.breaks_title || 'Pausen',
+          breaks_text: settings.breaks_text || '',
+          information_title: settings.information_title || 'Information',
+          information_text: settings.information_text || '',
+          damages_title: settings.damages_title || 'Schäden',
+          damages_text: settings.damages_text || '',
+          payment_title: settings.payment_title || 'Zahlungsbedingungen',
+          payment_text: settings.payment_text || ''
+        })
+      }
     }
     
     // Load service categories
@@ -101,6 +140,22 @@ const SettingsPage = () => {
     } else {
       toast.success(newStatus ? 'MwSt. aktiviert' : 'MwSt. deaktiviert')
       setCompanySettings({ ...companySettings, vat_enabled: newStatus })
+    }
+  }
+
+  // PDF Terms Management
+  const handleSaveTerms = async () => {
+    const { error } = await updateCompanySettings({
+      id: companySettings.id,
+      ...pdfTerms
+    })
+    
+    if (error) {
+      toast.error('Fehler beim Speichern der PDF-Bedingungen')
+    } else {
+      toast.success('PDF-Bedingungen erfolgreich aktualisiert')
+      setCompanySettings({ ...companySettings, ...pdfTerms })
+      setEditingTerms(false)
     }
   }
 
@@ -294,6 +349,19 @@ const SettingsPage = () => {
             >
               <Percent className="h-4 w-4" />
               MwSt. Satz
+            </button>
+            <button
+              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+                activeTab === 'pdf-terms'
+                  ? 'text-brand-primary border-b-2 border-brand-primary'
+                  : 'text-black hover:text-slate-900'
+              }`}
+              onClick={() => setActiveTab('pdf-terms')}
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              PDF-Bedingungen
             </button>
           </div>
         </div>
@@ -768,6 +836,264 @@ const SettingsPage = () => {
                   <strong>Hinweis:</strong> Dieser Satz wird bei allen neuen Angeboten automatisch verwendet. 
                   Bestehende Angebote werden nicht geändert.
                 </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PDF Terms Tab */}
+        {activeTab === 'pdf-terms' && (
+          <div className="bg-white rounded-lg border border-slate-200 p-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">PDF-Bedingungen verwalten</h2>
+                <p className="text-sm text-slate-600 mt-1">Bearbeiten Sie die Texte, die im PDF-Angebot angezeigt werden</p>
+              </div>
+              {!editingTerms ? (
+                <Button
+                  onClick={() => setEditingTerms(true)}
+                  className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  Bearbeiten
+                </Button>
+              ) : (
+                <div className="flex gap-2">
+                  <Button onClick={handleSaveTerms} className="bg-green-600 hover:bg-green-700">
+                    <Save className="mr-2 h-4 w-4" />
+                    Speichern
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setEditingTerms(false)
+                      loadSettings()
+                    }}
+                    variant="outline"
+                    className="border-slate-300 text-black hover:bg-slate-100"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    Abbrechen
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-6">
+              {/* Versicherungen */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Versicherungen</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.insurance_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, insurance_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.insurance_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, insurance_text: e.target.value})}
+                        rows={4}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.insurance_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.insurance_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Vorbereitung */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Vorbereitung</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.preparation_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, preparation_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.preparation_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, preparation_text: e.target.value})}
+                        rows={3}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.preparation_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.preparation_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Verbrauchsmaterial */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Verbrauchsmaterial</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.materials_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, materials_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.materials_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, materials_text: e.target.value})}
+                        rows={3}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.materials_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.materials_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Pausen */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Pausen</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.breaks_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, breaks_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.breaks_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, breaks_text: e.target.value})}
+                        rows={2}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.breaks_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.breaks_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Information */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Information</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.information_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, information_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.information_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, information_text: e.target.value})}
+                        rows={4}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.information_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.information_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Schäden */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Schäden</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.damages_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, damages_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.damages_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, damages_text: e.target.value})}
+                        rows={3}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.damages_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.damages_text}</div>
+                  </div>
+                )}
+              </div>
+
+              {/* Zahlungsbedingungen */}
+              <div className="border border-slate-200 rounded-lg p-4">
+                <Label className="text-black font-medium">Zahlungsbedingungen</Label>
+                {editingTerms ? (
+                  <div className="space-y-3 mt-2">
+                    <div>
+                      <Label className="text-sm text-slate-700">Titel</Label>
+                      <Input
+                        value={pdfTerms.payment_title}
+                        onChange={(e) => setPdfTerms({...pdfTerms, payment_title: e.target.value})}
+                        className="bg-white text-black mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm text-slate-700">Text</Label>
+                      <textarea
+                        value={pdfTerms.payment_text}
+                        onChange={(e) => setPdfTerms({...pdfTerms, payment_text: e.target.value})}
+                        rows={2}
+                        className="w-full mt-1 rounded-md border border-slate-200 bg-white text-black px-3 py-2"
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-2 bg-slate-50 p-3 rounded">
+                    <div className="font-medium text-black">{pdfTerms.payment_title}</div>
+                    <div className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{pdfTerms.payment_text}</div>
+                  </div>
+                )}
               </div>
             </div>
           </div>

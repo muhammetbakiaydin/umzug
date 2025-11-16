@@ -13,6 +13,22 @@ const OfferPrint = () => {
   const [packingPrice, setPackingPrice] = useState(0)
   const [serviceCategories, setServiceCategories] = useState([])
   const [additionalServices, setAdditionalServices] = useState([])
+  const [pdfTerms, setPdfTerms] = useState({
+    insurance_title: 'Versicherungen',
+    insurance_text: '',
+    preparation_title: 'Vorbereitung',
+    preparation_text: '',
+    materials_title: 'Verbrauchsmaterial',
+    materials_text: '',
+    breaks_title: 'Pausen',
+    breaks_text: '',
+    information_title: 'Information',
+    information_text: '',
+    damages_title: 'Schäden',
+    damages_text: '',
+    payment_title: 'Zahlungsbedingungen',
+    payment_text: ''
+  })
 
   useEffect(() => {
     const loadData = async () => {
@@ -72,6 +88,26 @@ const OfferPrint = () => {
     if (data) {
       setVatEnabled(data.vat_enabled !== false) // Default to true if not set
       if (data.vat_rate) setVatRate(data.vat_rate)
+      
+      // Load PDF terms
+      if (data.insurance_title) {
+        setPdfTerms({
+          insurance_title: data.insurance_title || 'Versicherungen',
+          insurance_text: data.insurance_text || '',
+          preparation_title: data.preparation_title || 'Vorbereitung',
+          preparation_text: data.preparation_text || '',
+          materials_title: data.materials_title || 'Verbrauchsmaterial',
+          materials_text: data.materials_text || '',
+          breaks_title: data.breaks_title || 'Pausen',
+          breaks_text: data.breaks_text || '',
+          information_title: data.information_title || 'Information',
+          information_text: data.information_text || '',
+          damages_title: data.damages_title || 'Schäden',
+          damages_text: data.damages_text || '',
+          payment_title: data.payment_title || 'Zahlungsbedingungen',
+          payment_text: data.payment_text || ''
+        })
+      }
     }
   }
 
@@ -758,35 +794,32 @@ const OfferPrint = () => {
         {/* Left Column */}
         <div>
           <div className="terms-section">
-            <div className="terms-heading">Versicherungen</div>
+            <div className="terms-heading">{pdfTerms.insurance_title}</div>
             <div className="terms-text">
-              <p>Die Transportversicherung ist im Preis inbegriffen mit einem
-Deckungsumfang von CHF 40'000.00. Weiter haftet unsere
-Betriebshaftpflichtversicherung bei Schäden bis zu CHF 100'000.-
-Bestehende Schäden am Mobiliar sind dem Umzugschef vor dem Umzug
-mitzuteilen.</p>
+              <p>{pdfTerms.insurance_text}</p>
             </div>
           </div>
 
           <div className="terms-section">
-            <div className="terms-heading">Vorbereitung</div>
+            <div className="terms-heading">{pdfTerms.preparation_title}</div>
             <div className="terms-text">
-              <p>Das Verpacken von kleineren Gegenständen wird durch den Kunden in Kartonschachteln bereitgestellt. Grösseres Umzugsgut wie TV und Sofa wird durch die Firma Umzug UNIT GmbH verpackt.</p>
+              <p>{pdfTerms.preparation_text}</p>
             </div>
           </div>
 
           <div className="terms-section">
-            <div className="terms-heading">Verbrauchsmaterial</div>
+            <div className="terms-heading">{pdfTerms.materials_title}</div>
             <div className="terms-text">
-              <p>Umzugsdecken werden vor Ort gratis zur Verfügung gestellt, damit das Umzugsgut gut gesichert wird. Verbrauchsmaterial wie Folien oder Bodenfliesen werden verrechnet, sowie das Depot für die Umzugskisten.</p>
+              <p>{pdfTerms.materials_text}</p>
             </div>
           </div>
 
           <div className="terms-section">
-            <div className="terms-heading">Pausen</div>
+            <div className="terms-heading">{pdfTerms.breaks_title}</div>
             <div className="terms-text">
-              <p><strong>Vor- und Nachmittag:</strong> 15 Minuten</p>
-              <p><strong>Mittagspause:</strong> 30 Minuten</p>
+              {pdfTerms.breaks_text.split('\n').map((line, i) => (
+                <p key={i}>{line}</p>
+              ))}
             </div>
           </div>
         </div>
@@ -794,23 +827,23 @@ mitzuteilen.</p>
         {/* Right Column */}
         <div>
           <div className="terms-section">
-            <div className="terms-heading">Information</div>
+            <div className="terms-heading">{pdfTerms.information_title}</div>
             <div className="terms-text">
-              <p>Die Offerte setzt voraus, dass beide Standorte frei zugänglich und über das schweizer Strassennetz erreichbar sind. Ist der Lieferwert mit normalen Umzugswagen nicht oder nur erschwert zugänglich, so erfolgt die Lieferung bis zur nächsten allgemein zugänglichen Stelle die ohne Zusatzaufwand oder Zusatzkosten erreicht werden kann.</p>
+              <p>{pdfTerms.information_text}</p>
             </div>
           </div>
 
           <div className="terms-section">
-            <div className="terms-heading">Schäden</div>
+            <div className="terms-heading">{pdfTerms.damages_title}</div>
             <div className="terms-text">
-              <p>Schäden müssen gemäss OR Art.452 Absatz 1 sofort nach dem Umzug am Umzugsladearbeiter mitgeteilt und schriftlich auf dem Schadenmeldungsformular mit dem Unterschrift des Kunden und des Umzugschefs festgehalten werden.</p>
+              <p>{pdfTerms.damages_text}</p>
             </div>
           </div>
 
           <div className="terms-section">
-            <div className="terms-heading">Zahlungsbedingungen</div>
+            <div className="terms-heading">{pdfTerms.payment_title}</div>
             <div className="terms-text">
-              <p>Barzahlung am Abladeort nach dem Umzug an den Teamleiter. Dies betrifft den Betrag für den gesammten Umzug und Reinigung.</p>
+              <p>{pdfTerms.payment_text}</p>
             </div>
           </div>
         </div>
