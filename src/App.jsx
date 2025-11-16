@@ -10,6 +10,8 @@ import AdminLogin from './pages/admin/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 import OffersPage from './pages/admin/Offers'
 import OfferDetail from './pages/admin/OfferDetail'
+import ReceiptDetail from './pages/admin/ReceiptDetail'
+import InvoiceDetail from './pages/admin/InvoiceDetail'
 import OfferPrint from './pages/admin/OfferPrint'
 import ReceiptPrint from './pages/admin/ReceiptPrint'
 import InvoicePrint from './pages/admin/InvoicePrint'
@@ -99,6 +101,26 @@ function App() {
                 <ProtectedRoute>
                   <AdminLayout>
                     <OfferDetail />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/receipts/:id"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <ReceiptDetail />
+                  </AdminLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/invoices/:id"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout>
+                    <InvoiceDetail />
                   </AdminLayout>
                 </ProtectedRoute>
               }

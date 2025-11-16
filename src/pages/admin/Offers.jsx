@@ -127,7 +127,7 @@ const OffersPage = () => {
       <div className="container mx-auto px-6 py-8">
         {/* Search and Filter Bar */}
         <div className="bg-white rounded-lg border border-slate-200 p-6 mb-6 shadow-sm">
-          <div className="grid md:grid-cols-[1fr,auto] gap-4">
+          <div className="flex flex-col gap-4">
             <div className="relative">
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
               <Input
@@ -137,32 +137,32 @@ const OffersPage = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2">
               <Button
                 variant={docTypeFilter === 'all' ? 'default' : 'outline'}
                 onClick={() => setDocTypeFilter('all')}
-                className={docTypeFilter === 'all' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+                className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'all' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}`}
               >
                 Alle
               </Button>
               <Button
                 variant={docTypeFilter === 'offer' ? 'default' : 'outline'}
                 onClick={() => setDocTypeFilter('offer')}
-                className={docTypeFilter === 'offer' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+                className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'offer' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}`}
               >
                 Offerten
               </Button>
               <Button
                 variant={docTypeFilter === 'receipt' ? 'default' : 'outline'}
                 onClick={() => setDocTypeFilter('receipt')}
-                className={docTypeFilter === 'receipt' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+                className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'receipt' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}`}
               >
                 Quittungen
               </Button>
               <Button
                 variant={docTypeFilter === 'invoice' ? 'default' : 'outline'}
                 onClick={() => setDocTypeFilter('invoice')}
-                className={docTypeFilter === 'invoice' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}
+                className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'invoice' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}`}
               >
                 Rechnungen
               </Button>
@@ -209,11 +209,15 @@ const OffersPage = () => {
             
             {/* Table Body */}
             <div className="divide-y divide-slate-200">
-              {filteredOffers.map((offer) => (
+              {filteredOffers.map((offer) => {
+                const detailPath = offer.document_type === 'receipt' ? `/admin/receipts/${offer.id}` :
+                                  offer.document_type === 'invoice' ? `/admin/invoices/${offer.id}` :
+                                  `/admin/offers/${offer.id}`;
+                return (
                 <div 
                   key={offer.id} 
                   className="hover:bg-slate-50 transition-colors cursor-pointer group"
-                  onClick={() => navigate(`/admin/offers/${offer.id}`)}
+                  onClick={() => navigate(detailPath)}
                 >
                   {/* Desktop View */}
                   <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4">
@@ -336,7 +340,7 @@ const OffersPage = () => {
                     </Button>
                   </div>
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         )}
