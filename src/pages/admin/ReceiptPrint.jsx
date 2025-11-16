@@ -152,7 +152,7 @@ const ReceiptPrint = () => {
         .service-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 40px;
+          margin-bottom: 20px;
           font-size: 11px;
           color: #000;
         }
@@ -180,27 +180,27 @@ const ReceiptPrint = () => {
           background-color: #fff;
         }
         .bemerkung-section {
-          margin-bottom: 20px;
+          margin-bottom: 15px;
         }
         .section-title {
           font-weight: bold;
           font-size: 12px;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
           color: #000;
         }
         .bemerkung-text {
           font-size: 11px;
-          line-height: 1.6;
-          min-height: 40px;
+          line-height: 1.5;
+          min-height: 30px;
           white-space: pre-wrap;
           color: #000;
         }
         .signature-section {
-          margin-top: 30px;
+          margin-top: 20px;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 40px;
-          margin-bottom: 30px;
+          margin-bottom: 20px;
         }
         .signature-block {
           font-size: 11px;
@@ -208,7 +208,7 @@ const ReceiptPrint = () => {
         }
         .signature-line {
           border-top: 1px solid #000;
-          margin-top: 30px;
+          margin-top: 20px;
           padding-top: 8px;
           font-style: italic;
           color: #000;
@@ -224,30 +224,30 @@ const ReceiptPrint = () => {
         }
         .payment-qr-section {
           border-top: 1px solid #000;
-          padding-top: 15px;
-          margin-top: 15px;
+          padding-top: 12px;
+          margin-top: 12px;
         }
         .payment-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 20px;
+          gap: 15px;
         }
         .payment-info {
           font-size: 9px;
-          line-height: 1.5;
+          line-height: 1.4;
           color: #000;
         }
         .payment-title {
           font-weight: bold;
           font-size: 10px;
-          margin-bottom: 8px;
+          margin-bottom: 6px;
           color: #000;
         }
         .qr-code-container {
           display: flex;
           justify-content: flex-start;
           align-items: flex-start;
-          margin: 8px 0;
+          margin: 6px 0;
         }
       `}</style>
 
@@ -377,19 +377,19 @@ const ReceiptPrint = () => {
             <div>Umzug Unit GmbH</div>
             <div>Tulpenweg 22</div>
             <div>3250 Lyss</div>
-            <div style={{ marginTop: '10px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ height: '30px' }}></div>
+            <div style={{ marginTop: '8px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ height: '25px' }}></div>
             <div><strong>Währung Betrag</strong></div>
             <div>CHF</div>
           </div>
           <div className="payment-info">
             <div className="payment-title">Zahlteil</div>
-            <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
               <div className="qr-code-container">
                 <img 
                   src="/QR.png" 
                   alt="QR Code Payment" 
-                  style={{ width: '100px', height: '100px' }}
+                  style={{ width: '90px', height: '90px' }}
                 />
               </div>
               <div>
@@ -398,8 +398,8 @@ const ReceiptPrint = () => {
                 <div>Umzug Unit GmbH</div>
                 <div>Tulpenweg 22</div>
                 <div>3250 Lyss</div>
-                <div style={{ marginTop: '8px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-                <div style={{ height: '20px' }}></div>
+                <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+                <div style={{ height: '18px' }}></div>
                 <div><strong>Währung Betrag</strong></div>
                 <div>CHF</div>
               </div>
