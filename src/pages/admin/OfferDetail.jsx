@@ -360,8 +360,10 @@ const OfferDetail = () => {
     setSendingEmail(true)
     
     try {
-      await sendOfferEmail(offer, recipientEmail)
-      toast.success(`Offerte erfolgreich an ${recipientEmail} gesendet!`)
+      // Get base URL for public offer link
+      const baseUrl = window.location.origin
+      await sendOfferEmail(offer, recipientEmail, baseUrl)
+      toast.success(`Offerte mit Bestätigungslink erfolgreich an ${recipientEmail} gesendet!`)
       setShowEmailDialog(false)
       setRecipientEmail('')
     } catch (error) {
@@ -1473,7 +1475,7 @@ const OfferDetail = () => {
                 className="mt-2 text-black bg-white border-slate-300"
               />
               <p className="text-sm text-slate-700 mt-2">
-                Die Offerte wird als PDF-Link per E-Mail versendet.
+                Die Offerte wird mit einem Link zum Ansehen, Unterschreiben und Akzeptieren per E-Mail versendet.
               </p>
             </div>
             <div className="flex gap-3 justify-end">

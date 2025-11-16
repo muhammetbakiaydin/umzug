@@ -865,11 +865,27 @@ const OfferPrint = () => {
         <div className="signature-lines">
           <div className="signature-field">
             <div className="signature-label">Ort, Datum</div>
-            <div className="signature-line"></div>
+            {offer.signature_location || offer.signature_date ? (
+              <div style={{ padding: '4px 0', minHeight: '30px', fontSize: '14px' }}>
+                {offer.signature_location && offer.signature_date
+                  ? `${offer.signature_location}, ${offer.signature_date}`
+                  : offer.signature_location || offer.signature_date}
+              </div>
+            ) : (
+              <div className="signature-line"></div>
+            )}
           </div>
           <div className="signature-field">
             <div className="signature-label">Unterschrift</div>
-            <div className="signature-line"></div>
+            {offer.customer_signature ? (
+              <img 
+                src={offer.customer_signature} 
+                alt="Unterschrift" 
+                style={{ maxHeight: '60px', maxWidth: '200px', objectFit: 'contain' }}
+              />
+            ) : (
+              <div className="signature-line"></div>
+            )}
           </div>
         </div>
       </div>

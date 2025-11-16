@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { getOffer, supabase } from '@/lib/supabase'
-import { Check, X, FileText, Calendar, MapPin, Mail, Phone } from 'lucide-react'
+import { Check, X, FileText, Calendar, MapPin, Mail, Phone, Pen } from 'lucide-react'
 import { toast } from 'sonner'
 
 const PublicOffer = () => {
@@ -12,10 +12,26 @@ const PublicOffer = () => {
   const [offer, setOffer] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [hasResponded, setHasResponded] = useState(false)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [signatureData, setSignatureData] = useState(null)
+  const canvasRef = useRef(null)
+  const [location, setLocation] = useState('')
+  const [date, setDate] = useState(new Date().toLocaleDateString('de-CH'))
 
   useEffect(() => {
     loadOffer()
   }, [id])
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      ctx.strokeStyle = '#000'
+      ctx.lineWidth = 2
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+    }
+  }, [])
 
   const loadOffer = async () => {
     setLoading(true)
@@ -36,17 +52,71 @@ const PublicOffer = () => {
     setLoading(false)
   }
 
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    const ctx = canvas.getContext('2d')
+    
+    setIsDrawing(true)
+    ctx.beginPath()
+    const x = e.type.includes('mouse') ? e.clientX - rect.left : e.touches[0].clientX - rect.left
+    const y = e.type.includes('mouse') ? e.clientY - rect.top : e.touches[0].clientY - rect.top
+    ctx.moveTo(x, y)
+  }
+
+  const draw = (e) => {
+    if (!isDrawing) return
+    
+    const canvas = canvasRef.current
+    const rect = canvas.getBoundingClientRect()
+    const ctx = canvas.getContext('2d')
+    
+    const x = e.type.includes('mouse') ? e.clientX - rect.left : e.touches[0].clientX - rect.left
+    const y = e.type.includes('mouse') ? e.clientY - rect.top : e.touches[0].clientY - rect.top
+    
+    ctx.lineTo(x, y)
+    ctx.stroke()
+  }
+
+  const stopDrawing = () => {
+    if (isDrawing) {
+      setIsDrawing(false)
+      const canvas = canvasRef.current
+      setSignatureData(canvas.toDataURL())
+    }
+  }
+
+  const clearSignature = () => {
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    setSignatureData(null)
+  }
+
   const handleResponse = async (response) => {
     if (hasResponded) return
 
+    if (response === 'accepted' && !signatureData) {
+      toast.error('Bitte unterschreiben Sie das Angebot')
+      return
+    }
+
     setSubmitting(true)
     try {
+      const updateData = { 
+        status: response,
+        updated_at: new Date().toISOString()
+      }
+
+      if (response === 'accepted' && signatureData) {
+        updateData.customer_signature = signatureData
+        updateData.signature_location = location
+        updateData.signature_date = date
+      }
+
       const { error } = await supabase
         .from('offers')
-        .update({ 
-          status: response,
-          updated_at: new Date().toISOString()
-        })
+        .update(updateData)
         .eq('id', id)
 
       if (error) throw error
@@ -251,6 +321,75 @@ const PublicOffer = () => {
               <h3 className="font-semibold text-slate-900 mb-3">Bemerkungen</h3>
               <div className="text-slate-700 whitespace-pre-wrap bg-slate-50 p-4 rounded-lg">
                 {offer.notes}
+              </div>
+            </div>
+          )}
+
+          {/* Signature Section */}
+          {!hasResponded && (
+            <div className="border-t border-slate-200 pt-6">
+              <h3 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                <Pen className="w-5 h-5 text-brand-primary" />
+                Unterschrift
+              </h3>
+              <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Ort
+                    </label>
+                    <input
+                      type="text"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                      placeholder="z.B. Lyss"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Datum
+                    </label>
+                    <input
+                      type="text"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Bitte unterschreiben Sie hier
+                  </label>
+                  <div className="relative">
+                    <canvas
+                      ref={canvasRef}
+                      width={600}
+                      height={200}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                      className="border-2 border-slate-300 rounded-lg w-full cursor-crosshair bg-white"
+                      style={{ touchAction: 'none' }}
+                    />
+                    {signatureData && (
+                      <button
+                        onClick={clearSignature}
+                        className="absolute top-2 right-2 px-3 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                      >
+                        Löschen
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-slate-600 mt-2">
+                    Unterschreiben Sie mit der Maus oder Ihrem Finger auf Touchscreens
+                  </p>
+                </div>
               </div>
             </div>
           )}
