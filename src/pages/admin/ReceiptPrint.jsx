@@ -180,7 +180,7 @@ const ReceiptPrint = () => {
           background-color: #fff;
         }
         .bemerkung-section {
-          margin-bottom: 40px;
+          margin-bottom: 20px;
         }
         .section-title {
           font-weight: bold;
@@ -191,15 +191,16 @@ const ReceiptPrint = () => {
         .bemerkung-text {
           font-size: 11px;
           line-height: 1.6;
-          min-height: 60px;
+          min-height: 40px;
           white-space: pre-wrap;
           color: #000;
         }
         .signature-section {
-          margin-top: 60px;
+          margin-top: 30px;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 40px;
+          margin-bottom: 30px;
         }
         .signature-block {
           font-size: 11px;
@@ -207,7 +208,7 @@ const ReceiptPrint = () => {
         }
         .signature-line {
           border-top: 1px solid #000;
-          margin-top: 50px;
+          margin-top: 30px;
           padding-top: 8px;
           font-style: italic;
           color: #000;
@@ -220,6 +221,32 @@ const ReceiptPrint = () => {
           font-size: 10px;
           font-style: italic;
           color: #000 !important;
+        }
+        .payment-qr-section {
+          border-top: 1px solid #000;
+          padding-top: 20px;
+          margin-top: 20px;
+        }
+        .payment-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+        }
+        .payment-info {
+          font-size: 10px;
+          line-height: 1.6;
+          color: #000;
+        }
+        .payment-title {
+          font-weight: bold;
+          font-size: 11px;
+          margin-bottom: 10px;
+          color: #000;
+        }
+        .qr-code-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
         }
       `}</style>
 
@@ -239,11 +266,6 @@ const ReceiptPrint = () => {
           <div>info@umzug-unit.ch</div>
         </div>
         <div className="customer-block">
-          <img 
-            src="/QR.png" 
-            alt="QR Code" 
-            style={{ width: '100px', height: '100px', marginBottom: '15px' }}
-          />
           <div className="customer-label">An:</div>
           <div><strong>{receiptData.customerName || '—'}</strong></div>
           {receiptData.customerStreet && <div>{receiptData.customerStreet}</div>}
@@ -340,6 +362,41 @@ const ReceiptPrint = () => {
           </div>
           <div className="signature-name">
             {receiptData.customerSignatureName || '—'}
+          </div>
+        </div>
+      </div>
+
+      {/* Payment QR Code Section */}
+      <div className="payment-qr-section">
+        <div className="payment-grid">
+          <div className="payment-info">
+            <div className="payment-title">Empfangsschein</div>
+            <div><strong>Konto / Zahlbar an</strong></div>
+            <div>CH39 0020 4204 2144 9601 C</div>
+            <div>Umzug Unit GmbH</div>
+            <div>Tulpenweg 22</div>
+            <div>3250 Lyss</div>
+            <div style={{ marginTop: '15px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ marginTop: '15px' }}><strong>Währung Betrag</strong></div>
+            <div>CHF</div>
+          </div>
+          <div className="payment-info">
+            <div className="payment-title">Zahlteil</div>
+            <div className="qr-code-container">
+              <img 
+                src="/QR.png" 
+                alt="QR Code Payment" 
+                style={{ width: '140px', height: '140px' }}
+              />
+            </div>
+            <div style={{ marginTop: '10px' }}><strong>Konto / Zahlbar an</strong></div>
+            <div>CH39 0020 4204 2144 9601 C</div>
+            <div>Umzug Unit GmbH</div>
+            <div>Tulpenweg 22</div>
+            <div>3250 Lyss</div>
+            <div style={{ marginTop: '10px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ marginTop: '10px' }}><strong>Währung Betrag</strong></div>
+            <div>CHF</div>
           </div>
         </div>
       </div>
