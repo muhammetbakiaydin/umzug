@@ -201,7 +201,6 @@ const CreateOffer = () => {
         ...prev,
         selectedCustomerId: customer.id,
         customerNumber: customer.customer_number,
-        contactPerson: `${customer.salutation || ''} ${customer.first_name} ${customer.last_name}`.trim(),
         fromSalutation: customer.salutation || 'Herr',
         fromFirstName: customer.first_name,
         fromLastName: customer.last_name,
