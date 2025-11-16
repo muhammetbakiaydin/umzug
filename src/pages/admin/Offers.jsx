@@ -12,7 +12,7 @@ const OffersPage = () => {
   const [offers, setOffers] = useState([])
   const [filteredOffers, setFilteredOffers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [docTypeFilter, setDocTypeFilter] = useState('all') // all, offer, receipt, invoice
+  const [docTypeFilter, setDocTypeFilter] = useState('all') // all, offer, receipt, invoice, accepted
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [offerToDelete, setOfferToDelete] = useState(null)
@@ -39,8 +39,12 @@ const OffersPage = () => {
       )
     }
     
-    // Filter by document type
-    if (docTypeFilter !== 'all') {
+    // Filter by document type or status
+    if (docTypeFilter === 'accepted') {
+      // Show only accepted offers (any document type with accepted status)
+      filtered = filtered.filter(offer => offer.status === 'accepted')
+    } else if (docTypeFilter !== 'all') {
+      // Filter by specific document type
       filtered = filtered.filter(offer => offer.document_type === docTypeFilter)
     }
     
@@ -165,6 +169,13 @@ const OffersPage = () => {
                 className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'invoice' ? 'bg-brand-primary hover:bg-[#d16635]' : ''}`}
               >
                 Rechnungen
+              </Button>
+              <Button
+                variant={docTypeFilter === 'accepted' ? 'default' : 'outline'}
+                onClick={() => setDocTypeFilter('accepted')}
+                className={`whitespace-nowrap flex-shrink-0 ${docTypeFilter === 'accepted' ? 'bg-green-600 hover:bg-green-700 text-white' : 'border-green-600 text-green-600 hover:bg-green-50'}`}
+              >
+                Akzeptiert
               </Button>
             </div>
           </div>
