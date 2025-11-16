@@ -316,9 +316,9 @@ const SettingsPage = () => {
       {/* Tabs */}
       <div className="container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg border border-slate-200 mb-6">
-          <div className="flex border-b border-slate-200">
+          <div className="flex overflow-x-auto border-b border-slate-200">
             <button
-              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+              className={`px-4 md:px-6 py-3 font-medium flex items-center gap-2 whitespace-nowrap min-w-fit ${
                 activeTab === 'services'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-black hover:text-slate-900'
@@ -326,10 +326,10 @@ const SettingsPage = () => {
               onClick={() => setActiveTab('services')}
             >
               <Package className="h-4 w-4" />
-              Service-Kategorien
+              <span className="text-sm md:text-base">Service-Kategorien</span>
             </button>
             <button
-              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+              className={`px-4 md:px-6 py-3 font-medium flex items-center gap-2 whitespace-nowrap min-w-fit ${
                 activeTab === 'additional'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-black hover:text-slate-900'
@@ -337,10 +337,10 @@ const SettingsPage = () => {
               onClick={() => setActiveTab('additional')}
             >
               <CheckSquare className="h-4 w-4" />
-              Zusatzleistungen
+              <span className="text-sm md:text-base">Zusatzleistungen</span>
             </button>
             <button
-              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+              className={`px-4 md:px-6 py-3 font-medium flex items-center gap-2 whitespace-nowrap min-w-fit ${
                 activeTab === 'vat'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-black hover:text-slate-900'
@@ -348,10 +348,10 @@ const SettingsPage = () => {
               onClick={() => setActiveTab('vat')}
             >
               <Percent className="h-4 w-4" />
-              MwSt. Satz
+              <span className="text-sm md:text-base">MwSt. Satz</span>
             </button>
             <button
-              className={`px-6 py-3 font-medium flex items-center gap-2 ${
+              className={`px-4 md:px-6 py-3 font-medium flex items-center gap-2 whitespace-nowrap min-w-fit ${
                 activeTab === 'pdf-terms'
                   ? 'text-brand-primary border-b-2 border-brand-primary'
                   : 'text-black hover:text-slate-900'
@@ -361,7 +361,7 @@ const SettingsPage = () => {
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
-              PDF-Bedingungen
+              <span className="text-sm md:text-base">PDF-Bedingungen</span>
             </button>
           </div>
         </div>
@@ -843,8 +843,8 @@ const SettingsPage = () => {
 
         {/* PDF Terms Tab */}
         {activeTab === 'pdf-terms' && (
-          <div className="bg-white rounded-lg border border-slate-200 p-6">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">PDF-Bedingungen verwalten</h2>
                 <p className="text-sm text-slate-600 mt-1">Bearbeiten Sie die Texte, die im PDF-Angebot angezeigt werden</p>
@@ -852,14 +852,14 @@ const SettingsPage = () => {
               {!editingTerms ? (
                 <Button
                   onClick={() => setEditingTerms(true)}
-                  className="bg-white border border-slate-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700"
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Bearbeiten
                 </Button>
               ) : (
-                <div className="flex gap-2">
-                  <Button onClick={handleSaveTerms} className="bg-green-600 hover:bg-green-700">
+                <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                  <Button onClick={handleSaveTerms} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
                     <Save className="mr-2 h-4 w-4" />
                     Speichern
                   </Button>
@@ -869,7 +869,7 @@ const SettingsPage = () => {
                       loadSettings()
                     }}
                     variant="outline"
-                    className="border-slate-300 text-black hover:bg-slate-100"
+                    className="border-slate-300 text-black hover:bg-slate-100 w-full sm:w-auto"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Abbrechen

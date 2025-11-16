@@ -697,7 +697,7 @@ const CreateOffer = () => {
                     className="bg-white border-slate-200 text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
                     value={formData.contactPerson}
                     onChange={(e) => handleChange('contactPerson', e.target.value)}
-                    placeholder="z.B. Herr Minerva Marco"
+                    placeholder="z.B. Herr Goldy Kerri"
                   />
                 </div>
               </div>
