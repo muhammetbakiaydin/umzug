@@ -13,7 +13,7 @@ import {
   getAllAdditionalServices,
   getCompanySettings
 } from '@/lib/supabase'
-import { generateInvoiceNumber, generateCustomerNumber } from '@/lib/utils'
+import { generateInvoiceNumber, generateOfferNumber, generateCustomerNumber } from '@/lib/utils'
 import { ArrowLeft, Save, Search, Plus, Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -152,8 +152,12 @@ const CreateInvoice = () => {
       const vatAmount = calculateVAT()
       const total = calculateTotal()
 
+      // Generate offer_number (required field in database)
+      const offerNumber = await generateOfferNumber(supabase)
+
       const invoiceData = {
         document_type: 'invoice',
+        offer_number: offerNumber,
         invoice_number: formData.invoiceNumber,
         offer_date: formData.invoiceDate,
         from_first_name: formData.customerName.split(' ')[0] || '',
