@@ -224,29 +224,30 @@ const ReceiptPrint = () => {
         }
         .payment-qr-section {
           border-top: 1px solid #000;
-          padding-top: 20px;
-          margin-top: 20px;
+          padding-top: 15px;
+          margin-top: 15px;
         }
         .payment-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
+          gap: 20px;
         }
         .payment-info {
-          font-size: 10px;
-          line-height: 1.6;
+          font-size: 9px;
+          line-height: 1.5;
           color: #000;
         }
         .payment-title {
           font-weight: bold;
-          font-size: 11px;
-          margin-bottom: 10px;
+          font-size: 10px;
+          margin-bottom: 8px;
           color: #000;
         }
         .qr-code-container {
           display: flex;
-          justify-content: center;
-          align-items: center;
+          justify-content: flex-start;
+          align-items: flex-start;
+          margin: 8px 0;
         }
       `}</style>
 
@@ -376,27 +377,33 @@ const ReceiptPrint = () => {
             <div>Umzug Unit GmbH</div>
             <div>Tulpenweg 22</div>
             <div>3250 Lyss</div>
-            <div style={{ marginTop: '15px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ marginTop: '15px' }}><strong>Währung Betrag</strong></div>
+            <div style={{ marginTop: '10px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ height: '30px' }}></div>
+            <div><strong>Währung Betrag</strong></div>
             <div>CHF</div>
           </div>
           <div className="payment-info">
             <div className="payment-title">Zahlteil</div>
-            <div className="qr-code-container">
-              <img 
-                src="/QR.png" 
-                alt="QR Code Payment" 
-                style={{ width: '140px', height: '140px' }}
-              />
+            <div style={{ display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
+              <div className="qr-code-container">
+                <img 
+                  src="/QR.png" 
+                  alt="QR Code Payment" 
+                  style={{ width: '100px', height: '100px' }}
+                />
+              </div>
+              <div>
+                <div><strong>Konto / Zahlbar an</strong></div>
+                <div>CH39 0020 4204 2144 9601 C</div>
+                <div>Umzug Unit GmbH</div>
+                <div>Tulpenweg 22</div>
+                <div>3250 Lyss</div>
+                <div style={{ marginTop: '8px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+                <div style={{ height: '20px' }}></div>
+                <div><strong>Währung Betrag</strong></div>
+                <div>CHF</div>
+              </div>
             </div>
-            <div style={{ marginTop: '10px' }}><strong>Konto / Zahlbar an</strong></div>
-            <div>CH39 0020 4204 2144 9601 C</div>
-            <div>Umzug Unit GmbH</div>
-            <div>Tulpenweg 22</div>
-            <div>3250 Lyss</div>
-            <div style={{ marginTop: '10px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ marginTop: '10px' }}><strong>Währung Betrag</strong></div>
-            <div>CHF</div>
           </div>
         </div>
       </div>
