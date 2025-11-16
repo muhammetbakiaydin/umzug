@@ -5,6 +5,7 @@ import { getOffer, getCompanySettings } from '@/lib/supabase'
 const ReceiptPrint = () => {
   const { id } = useParams()
   const [receipt, setReceipt] = useState(null)
+  const [receiptData, setReceiptData] = useState(null)
   const [company, setCompany] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -15,10 +16,24 @@ const ReceiptPrint = () => {
   const loadData = async () => {
     setLoading(true)
     
-    const { data: receiptData } = await getOffer(id)
+    const { data: receiptRecord } = await getOffer(id)
     const { data: companyData } = await getCompanySettings()
 
-    if (receiptData) setReceipt(receiptData)
+    if (receiptRecord) {
+      setReceipt(receiptRecord)
+      // Parse notes field which contains JSON data for cleaning receipt
+      if (receiptRecord.notes) {
+        try {
+          const parsedData = JSON.parse(receiptRecord.notes)
+          setReceiptData(parsedData)
+        } catch (e) {
+          console.error('Failed to parse receipt data:', e)
+          setReceiptData({})
+        }
+      } else {
+        setReceiptData({})
+      }
+    }
     if (companyData) setCompany(companyData)
     
     setLoading(false)
@@ -30,12 +45,9 @@ const ReceiptPrint = () => {
   }
 
   const formatCurrency = (value) => {
-    if (!value && value !== 0) return 'CHF 0.00'
-    return new Intl.NumberFormat('de-CH', {
-      style: 'currency',
-      currency: 'CHF',
-      minimumFractionDigits: 2,
-    }).format(value).replace('CHF', 'CHF ')
+    if (!value && value !== 0) return 'CHF 0.–'
+    // Swiss format: CHF 890.–
+    return `CHF ${parseFloat(value).toFixed(0)}.–`
   }
 
   const formatDate = (dateString) => {
@@ -47,12 +59,12 @@ const ReceiptPrint = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-xl">Lädt Quittung...</div>
+        <div className="text-xl">Lädt Quittung Reinigung...</div>
       </div>
     )
   }
 
-  if (!receipt) {
+  if (!receipt || !receiptData) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-xl text-red-600">Quittung nicht gefunden</div>
@@ -60,10 +72,10 @@ const ReceiptPrint = () => {
     )
   }
 
-  const amount = receipt.flat_rate_price || 0
-  const taxRate = receipt.tax_rate || 0
-  const taxAmount = receipt.tax_amount || 0
-  const total = receipt.total || amount
+  const cleaningPrice = receiptData.cleaningFlatPrice || 0
+  const quantity = receiptData.quantity || 1
+  const isVatExempt = receiptData.isVatExempt || false
+  const totalAmount = receipt.total || cleaningPrice
 
   return (
     <div className="print-page">
@@ -86,7 +98,7 @@ const ReceiptPrint = () => {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 40px;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
         }
         .company-info {
           font-size: 11px;
@@ -97,76 +109,88 @@ const ReceiptPrint = () => {
           font-size: 14px;
           margin-bottom: 8px;
         }
-        .receipt-info {
+        .customer-block {
           text-align: right;
           font-size: 11px;
           line-height: 1.6;
         }
+        .customer-label {
+          font-weight: normal;
+          color: #666;
+          margin-bottom: 5px;
+        }
+        .reference-line {
+          font-size: 11px;
+          margin-bottom: 5px;
+        }
+        .date-line {
+          font-size: 11px;
+          margin-bottom: 30px;
+          text-align: right;
+        }
         .receipt-title {
-          font-size: 24px;
+          font-size: 20px;
           font-weight: bold;
-          margin-bottom: 40px;
+          margin-bottom: 30px;
           color: #e67739;
         }
-        .customer-box {
-          border: 1px solid #333;
-          padding: 15px;
+        .service-table {
+          width: 100%;
+          border-collapse: collapse;
           margin-bottom: 40px;
           font-size: 11px;
-          line-height: 1.6;
         }
-        .customer-label {
+        .service-table th {
+          background-color: #f0f0f0;
+          border: 1px solid #333;
+          padding: 10px 8px;
+          text-align: left;
           font-weight: bold;
-          margin-bottom: 10px;
         }
-        .content-section {
+        .service-table td {
+          border: 1px solid #333;
+          padding: 8px;
+          vertical-align: top;
+        }
+        .service-table .col-anzahl { width: 15%; }
+        .service-table .col-einheit { width: 40%; }
+        .service-table .col-prostd { width: 20%; }
+        .service-table .col-total { width: 25%; text-align: right; }
+        .service-table .total-row {
+          font-weight: bold;
+          background-color: #f9f9f9;
+        }
+        .bemerkung-section {
           margin-bottom: 40px;
         }
         .section-title {
           font-weight: bold;
           font-size: 12px;
           margin-bottom: 10px;
-          border-bottom: 2px solid #e67739;
-          padding-bottom: 5px;
         }
-        .kv-list {
+        .bemerkung-text {
           font-size: 11px;
-          line-height: 2;
+          line-height: 1.6;
+          min-height: 60px;
+          white-space: pre-wrap;
         }
-        .kv-row {
+        .signature-section {
+          margin-top: 60px;
           display: grid;
-          grid-template-columns: 200px 1fr;
-          gap: 20px;
-          padding: 4px 0;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
         }
-        .kv-label {
-          font-weight: normal;
-          color: #666;
+        .signature-block {
+          font-size: 11px;
         }
-        .kv-value {
-          font-weight: normal;
-          color: #000;
+        .signature-line {
+          border-top: 1px solid #333;
+          margin-top: 50px;
+          padding-top: 8px;
+          font-style: italic;
         }
-        .price-box {
-          background: #f9f9f9;
-          border: 2px solid #e67739;
-          padding: 20px;
-          margin-top: 40px;
-          font-size: 12px;
-        }
-        .price-row {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 20px;
-          padding: 8px 0;
-        }
-        .price-total {
-          border-top: 2px solid #333;
-          padding-top: 12px;
-          margin-top: 12px;
-          font-size: 16px;
-          font-weight: bold;
-          color: #e67739;
+        .signature-name {
+          margin-top: 5px;
         }
         .footer {
           margin-top: 60px;
@@ -175,21 +199,16 @@ const ReceiptPrint = () => {
           line-height: 1.6;
           border-top: 1px solid #ddd;
           padding-top: 20px;
+          text-align: center;
         }
-        .payment-method {
-          background: #fff3e0;
-          border-left: 4px solid #e67739;
-          padding: 15px;
-          margin: 20px 0;
-          font-size: 11px;
-        }
-        .payment-label {
-          font-weight: bold;
-          margin-bottom: 5px;
+        .vat-exempt-note {
+          font-size: 10px;
+          font-style: italic;
+          color: #666;
         }
       `}</style>
 
-      {/* Header */}
+      {/* Header: Company Info (left) + Customer Block (right) */}
       <div className="header-grid">
         <div className="company-info">
           {company?.logo_url && (
@@ -206,70 +225,106 @@ const ReceiptPrint = () => {
           <div>Email: {company?.email}</div>
           {company?.website && <div>Web: {company.website}</div>}
         </div>
-        <div className="receipt-info">
-          <div><strong>Quittung Nr.:</strong> {receipt.receipt_number}</div>
-          <div><strong>Datum:</strong> {formatDate(receipt.offer_date)}</div>
+        <div className="customer-block">
+          <div className="customer-label">An:</div>
+          <div><strong>{receiptData.customerName || '—'}</strong></div>
+          {receiptData.customerStreet && <div>{receiptData.customerStreet}</div>}
+          {(receiptData.customerZip || receiptData.customerCity) && (
+            <div>{receiptData.customerZip} {receiptData.customerCity}</div>
+          )}
         </div>
+      </div>
+
+      {/* Reference and Date */}
+      {receiptData.referenceText && (
+        <div className="reference-line">
+          <strong>Unsere Referenz:</strong> {receiptData.referenceText}
+        </div>
+      )}
+      <div className="date-line">
+        <strong>Datum:</strong> {formatDate(receipt.offer_date)}
       </div>
 
       {/* Title */}
-      <div className="receipt-title">QUITTUNG</div>
+      <div className="receipt-title">Quittung Reinigung</div>
 
-      {/* Customer */}
-      <div className="customer-box">
-        <div className="customer-label">Empfänger:</div>
-        <div>
-          <strong>{receipt.from_first_name} {receipt.from_last_name}</strong>
+      {/* Service Table */}
+      <table className="service-table">
+        <thead>
+          <tr>
+            <th className="col-anzahl">Anzahl</th>
+            <th className="col-einheit">Einheit</th>
+            <th className="col-prostd">Pro Std.</th>
+            <th className="col-total">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {/* Row 1: Flat description with size and quantity */}
+          <tr>
+            <td>{quantity}</td>
+            <td>
+              {receiptData.flatDescription || '—'}
+              {receiptData.flatSizeM2 && ` (${receiptData.flatSizeM2})`}
+            </td>
+            <td></td>
+            <td></td>
+          </tr>
+
+          {/* Row 2: Flat price label */}
+          <tr>
+            <td></td>
+            <td>Pauschalpreis für Ihre Reinigung beträgt</td>
+            <td></td>
+            <td style={{ textAlign: 'right' }}>{formatCurrency(cleaningPrice)}</td>
+          </tr>
+
+          {/* Row 3 (conditional): VAT exemption notice */}
+          {isVatExempt && (
+            <tr>
+              <td></td>
+              <td colSpan="3" className="vat-exempt-note">
+                Nicht mehrwertsteuerpflichtig Art. 10 MWSTG
+              </td>
+            </tr>
+          )}
+
+          {/* Row 4: Total */}
+          <tr className="total-row">
+            <td></td>
+            <td><strong>Total CHF</strong></td>
+            <td></td>
+            <td style={{ textAlign: 'right' }}><strong>{formatCurrency(totalAmount)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      {/* Bemerkung Section */}
+      <div className="bemerkung-section">
+        <div className="section-title">Bemerkung:</div>
+        <div className="bemerkung-text">
+          {receiptData.remark || '—'}
         </div>
-        {receipt.from_street && <div>{receipt.from_street}</div>}
-        {receipt.from_city && <div>{receipt.from_city}</div>}
       </div>
 
-      {/* Receipt Details */}
-      <div className="content-section">
-        <div className="section-title">Zahlungsbestätigung</div>
-        <div style={{ marginTop: '20px', fontSize: '11px', lineHeight: '1.8' }}>
-          <p>
-            Hiermit bestätigen wir den Erhalt folgenden Betrages:
-          </p>
-        </div>
-      </div>
-
-      {/* Payment Method */}
-      <div className="payment-method">
-        <div className="payment-label">Zahlungsmethode</div>
-        <div style={{ textTransform: 'capitalize' }}>
-          {receipt.category === 'quittung' ? 'Barzahlung' : 'Zahlung erhalten'}
-        </div>
-      </div>
-
-      {/* Price Calculation */}
-      <div className="price-box">
-        <div className="price-row">
-          <div>Betrag:</div>
-          <div style={{ fontFamily: 'monospace' }}>{formatCurrency(amount)}</div>
-        </div>
-        {taxRate > 0 && (
-          <div className="price-row">
-            <div>MwSt. ({taxRate}%):</div>
-            <div style={{ fontFamily: 'monospace' }}>{formatCurrency(taxAmount)}</div>
+      {/* Signature Section */}
+      <div className="signature-section">
+        <div className="signature-block">
+          <div className="signature-line">
+            Reinigungschef
           </div>
-        )}
-        <div className="price-row price-total">
-          <div>Total erhalten:</div>
-          <div style={{ fontFamily: 'monospace' }}>{formatCurrency(total)}</div>
-        </div>
-      </div>
-
-      {/* Notes */}
-      {receipt.notes && (
-        <div className="content-section" style={{ marginTop: '40px' }}>
-          <div className="section-title">Bemerkungen</div>
-          <div style={{ fontSize: '11px', marginTop: '10px', whiteSpace: 'pre-wrap' }}>
-            {receipt.notes}
+          <div className="signature-name">
+            {receiptData.cleaningManagerName || '—'}
           </div>
         </div>
-      )}
+        <div className="signature-block">
+          <div className="signature-line">
+            Kunde
+          </div>
+          <div className="signature-name">
+            {receiptData.customerSignatureName || '—'}
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
       <div className="footer">

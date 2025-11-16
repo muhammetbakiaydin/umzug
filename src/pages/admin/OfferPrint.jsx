@@ -722,6 +722,10 @@ const OfferPrint = () => {
             <td>{offer.boxes_note || '20 Umzugskisten Kostenlos zur Verfügung'}</td>
             <td>{offer.assembly_note || 'Inkl. De/Montage'}</td>
           </tr>
+          <tr>
+            <td></td>
+            <td></td>
+          </tr>
         </tbody>
       </table>
 
