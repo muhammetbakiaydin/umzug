@@ -732,9 +732,15 @@ const OfferPrint = () => {
             const selectedServices = getSelectedAdditionalServices()
             const isSelected = selectedServices.some(s => s.name === service.name)
             
+            // Find the actual service with adjusted price if selected
+            const selectedService = selectedServices.find(s => s.name === service.name)
+            const displayPrice = selectedService ? selectedService.price : service.price
+            
             return (
               <div key={service.id} className="checkbox-row">
-                <div className="checkbox-label">{service.name}:</div>
+                <div className="checkbox-label">
+                  {service.name} {displayPrice ? `(${formatCurrency(displayPrice)})` : ''}:
+                </div>
                 <div className="checkbox-options">
                   <div className="checkbox-option">
                     <span className={`checkbox ${isSelected ? 'checked' : ''}`}></span>
@@ -748,28 +754,6 @@ const OfferPrint = () => {
               </div>
             )
           })}
-        </div>
-        <div>
-          <div style={{ marginBottom: '6px' }}>
-            {getSelectedAdditionalServices().map((service, index) => {
-              const isStundensatz = service.name === 'Stundensatz' || service.name.toLowerCase().includes('stundensatz')
-              const hasBreakdown = isStundensatz && service.base_price && service.price !== service.base_price
-              
-              return (
-                <div key={index}>
-                  Pauschalpreis {service.name}: {formatCurrency(service.price)}
-                  {hasBreakdown && (
-                    <span style={{ fontSize: '11px', color: '#666' }}>
-                      {' '}(Basis: {formatCurrency(service.base_price)} + {formatCurrency(service.price - service.base_price)})
-                    </span>
-                  )}
-                </div>
-              )
-            })}
-            {getSelectedAdditionalServices().length === 0 && (
-              <div style={{ color: '#666', fontStyle: 'italic' }}>Keine Zusatzleistungen gewählt</div>
-            )}
-          </div>
         </div>
       </div>
 

@@ -868,8 +868,7 @@ const SettingsPage = () => {
                       setEditingTerms(false)
                       loadSettings()
                     }}
-                    variant="outline"
-                    className="border-slate-300 text-black hover:bg-slate-100 w-full sm:w-auto"
+                    className="bg-slate-600 hover:bg-slate-700 text-white w-full sm:w-auto"
                   >
                     <X className="mr-2 h-4 w-4" />
                     Abbrechen
