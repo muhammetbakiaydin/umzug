@@ -45,6 +45,7 @@ const CreateReceipt = () => {
     flatSizeM2: '',
     quantity: 1,
     // Pricing
+    hourlyRate: 0,
     cleaningFlatPrice: 0,
     isVatExempt: true,
     // Remarks and Signatures
@@ -167,6 +168,7 @@ const CreateReceipt = () => {
           flatDescription: formData.flatDescription,
           flatSizeM2: formData.flatSizeM2,
           quantity: formData.quantity,
+          hourlyRate: formData.hourlyRate,
           cleaningFlatPrice: formData.cleaningFlatPrice,
           isVatExempt: formData.isVatExempt,
           remark: formData.remark,
@@ -383,6 +385,19 @@ const CreateReceipt = () => {
                   onChange={(e) => handleChange('quantity', parseInt(e.target.value) || 1)}
                 />
                 <p className="text-xs text-slate-600 mt-1">Normalerweise 1 (Standard)</p>
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Stundensatz (CHF)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  className="bg-white border-slate-200 text-slate-900"
+                  value={formData.hourlyRate}
+                  onChange={(e) => handleChange('hourlyRate', parseFloat(e.target.value) || 0)}
+                />
+                <p className="text-xs text-slate-600 mt-1">Wird in "Pro Std." angezeigt (optional)</p>
               </div>
 
               <div>

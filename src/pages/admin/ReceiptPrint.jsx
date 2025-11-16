@@ -45,9 +45,9 @@ const ReceiptPrint = () => {
   }
 
   const formatCurrency = (value) => {
-    if (!value && value !== 0) return 'CHF 0.–'
-    // Swiss format: CHF 890.–
-    return `CHF ${parseFloat(value).toFixed(0)}.–`
+    if (!value && value !== 0) return '0.00'
+    // Format: 123.45 or 123.00
+    return parseFloat(value).toFixed(2)
   }
 
   const formatDate = (dateString) => {
@@ -99,7 +99,7 @@ const ReceiptPrint = () => {
           margin: 0 auto;
           background: white !important;
           font-family: Arial, sans-serif;
-          padding: 20mm;
+          padding: 15mm 20mm;
           box-sizing: border-box;
           color: #000 !important;
           position: relative;
@@ -107,66 +107,66 @@ const ReceiptPrint = () => {
         .header-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          margin-bottom: 30px;
+          gap: 30px;
+          margin-bottom: 15px;
         }
         .company-info {
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 10px;
+          line-height: 1.5;
           color: #000;
         }
         .company-name {
           font-weight: bold;
-          font-size: 14px;
-          margin-bottom: 8px;
+          font-size: 12px;
+          margin-bottom: 6px;
           color: #000;
         }
         .customer-block {
           text-align: right;
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 10px;
+          line-height: 1.5;
           color: #000;
         }
         .customer-label {
           font-weight: normal;
           color: #000;
-          margin-bottom: 5px;
+          margin-bottom: 4px;
         }
         .reference-line {
-          font-size: 11px;
-          margin-bottom: 5px;
+          font-size: 10px;
+          margin-bottom: 4px;
           color: #000;
         }
         .date-line {
-          font-size: 11px;
-          margin-bottom: 30px;
+          font-size: 10px;
+          margin-bottom: 15px;
           text-align: right;
           color: #000;
         }
         .receipt-title {
-          font-size: 20px;
+          font-size: 18px;
           font-weight: bold;
-          margin-bottom: 30px;
+          margin-bottom: 15px;
           color: #000;
         }
         .service-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 20px;
-          font-size: 11px;
+          margin-bottom: 15px;
+          font-size: 10px;
           color: #000;
         }
         .service-table th {
           background-color: #fff;
           border: 1px solid #000;
-          padding: 10px 8px;
+          padding: 8px 6px;
           text-align: left;
           font-weight: bold;
           color: #000;
         }
         .service-table td {
           border: 1px solid #000;
-          padding: 8px;
+          padding: 6px;
           vertical-align: top;
           background-color: #fff;
           color: #000;
@@ -180,41 +180,41 @@ const ReceiptPrint = () => {
           background-color: #fff;
         }
         .bemerkung-section {
-          margin-bottom: 15px;
+          margin-bottom: 10px;
         }
         .section-title {
           font-weight: bold;
-          font-size: 12px;
-          margin-bottom: 8px;
+          font-size: 11px;
+          margin-bottom: 6px;
           color: #000;
         }
         .bemerkung-text {
-          font-size: 11px;
-          line-height: 1.5;
-          min-height: 30px;
+          font-size: 10px;
+          line-height: 1.4;
+          min-height: 25px;
           white-space: pre-wrap;
           color: #000;
         }
         .signature-section {
-          margin-top: 20px;
+          margin-top: 15px;
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          margin-bottom: 20px;
+          gap: 30px;
+          margin-bottom: 15px;
         }
         .signature-block {
-          font-size: 11px;
+          font-size: 10px;
           color: #000;
         }
         .signature-line {
           border-top: 1px solid #000;
-          margin-top: 20px;
-          padding-top: 8px;
+          margin-top: 15px;
+          padding-top: 6px;
           font-style: italic;
           color: #000;
         }
         .signature-name {
-          margin-top: 5px;
+          margin-top: 4px;
           color: #000;
         }
         .vat-exempt-note {
@@ -224,30 +224,30 @@ const ReceiptPrint = () => {
         }
         .payment-qr-section {
           border-top: 1px solid #000;
-          padding-top: 12px;
-          margin-top: 12px;
+          padding-top: 10px;
+          margin-top: 10px;
         }
         .payment-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 15px;
+          gap: 12px;
         }
         .payment-info {
-          font-size: 9px;
-          line-height: 1.4;
+          font-size: 8px;
+          line-height: 1.3;
           color: #000;
         }
         .payment-title {
           font-weight: bold;
-          font-size: 10px;
-          margin-bottom: 6px;
+          font-size: 9px;
+          margin-bottom: 5px;
           color: #000;
         }
         .qr-code-container {
           display: flex;
           justify-content: flex-start;
           align-items: flex-start;
-          margin: 6px 0;
+          margin: 5px 0;
         }
       `}</style>
 
@@ -257,7 +257,7 @@ const ReceiptPrint = () => {
           <img 
             src="/cropped-umzug-final.png" 
             alt="Company Logo" 
-            style={{ maxWidth: '180px', marginBottom: '15px' }}
+            style={{ maxWidth: '140px', marginBottom: '10px' }}
           />
           <div className="company-name">Umzug UNIT GmbH</div>
           <div>Tulpenweg 22</div>
@@ -307,7 +307,7 @@ const ReceiptPrint = () => {
               {receiptData.flatDescription || '—'}
               {receiptData.flatSizeM2 && ` (${receiptData.flatSizeM2})`}
             </td>
-            <td></td>
+            <td>{receiptData.hourlyRate ? formatCurrency(receiptData.hourlyRate) : ''}</td>
             <td></td>
           </tr>
 
@@ -366,7 +366,7 @@ const ReceiptPrint = () => {
           </div>
         </div>
       </div>
-
+      <br /> <br /> <br /> <br />
       {/* Payment QR Code Section */}
       <div className="payment-qr-section">
         <div className="payment-grid">
@@ -377,19 +377,19 @@ const ReceiptPrint = () => {
             <div>Umzug Unit GmbH</div>
             <div>Tulpenweg 22</div>
             <div>3250 Lyss</div>
-            <div style={{ marginTop: '8px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ height: '25px' }}></div>
+            <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ height: '20px' }}></div>
             <div><strong>Währung Betrag</strong></div>
             <div>CHF</div>
           </div>
           <div className="payment-info">
             <div className="payment-title">Zahlteil</div>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
               <div className="qr-code-container">
                 <img 
                   src="/QR.png" 
                   alt="QR Code Payment" 
-                  style={{ width: '90px', height: '90px' }}
+                  style={{ width: '80px', height: '80px' }}
                 />
               </div>
               <div>
@@ -398,8 +398,8 @@ const ReceiptPrint = () => {
                 <div>Umzug Unit GmbH</div>
                 <div>Tulpenweg 22</div>
                 <div>3250 Lyss</div>
-                <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-                <div style={{ height: '18px' }}></div>
+                <div style={{ marginTop: '5px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+                <div style={{ height: '15px' }}></div>
                 <div><strong>Währung Betrag</strong></div>
                 <div>CHF</div>
               </div>

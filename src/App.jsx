@@ -23,15 +23,17 @@ import SettingsPage from './pages/admin/Settings'
 
 // Public Pages
 import Terms from './pages/Terms'
+import PublicOffer from './pages/PublicOffer'
 
 function App() {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className="min-h-screen bg-background">
           <Routes>
             {/* Public Routes */}
             <Route path="/terms" element={<Terms />} />
+            <Route path="/offer/:id" element={<PublicOffer />} />
             
             {/* Public PDF Print Routes - accessible without login */}
             <Route path="/admin/offers/:id/print" element={<OfferPrint />} />

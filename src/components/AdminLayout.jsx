@@ -23,7 +23,6 @@ const AdminLayout = ({ children }) => {
     { path: '/admin/dashboard', label: 'Dashboard', icon: Grid3x3 },
     { path: '/admin/offers/create', label: 'Neue Offerte', icon: FileText },
     { path: '/admin/offers', label: 'Umzugsleistungen', icon: TruckIcon },
-    { path: '/admin/settings', label: 'Service-Kategorien', icon: Grid3x3 },
     { path: '/admin/customers', label: 'Kunden', icon: Users },
     { path: '/admin/settings', label: 'Einstellungen', icon: Settings },
   ]

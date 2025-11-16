@@ -42,9 +42,9 @@ const InvoicePrint = () => {
   }
 
   const formatCurrency = (value) => {
-    if (!value && value !== 0) return 'CHF 0.–'
-    // Swiss format: CHF 500.–
-    return `CHF ${parseFloat(value).toFixed(0)}.–`
+    if (!value && value !== 0) return '0.00'
+    // Format: 230.25
+    return parseFloat(value).toFixed(2)
   }
 
   const formatDate = (dateString) => {

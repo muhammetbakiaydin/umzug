@@ -31,6 +31,15 @@ const InvoiceDetail = () => {
     setLoading(false)
   }
 
+  const parseInvoiceNotes = () => {
+    if (!invoice?.notes) return null
+    try {
+      return JSON.parse(invoice.notes)
+    } catch (e) {
+      return null
+    }
+  }
+
   const handleDelete = async () => {
     setDeleting(true)
     try {
@@ -213,8 +222,66 @@ const InvoiceDetail = () => {
           {/* Notes */}
           {invoice.notes && (
             <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
-              <h3 className="text-lg font-semibold text-slate-900 mb-4">Notizen</h3>
-              <div className="text-slate-900 whitespace-pre-wrap">{invoice.notes}</div>
+              <h3 className="text-lg font-semibold text-slate-900 mb-4">Rechnungsdetails</h3>
+              {(() => {
+                const invoiceData = parseInvoiceNotes()
+                if (!invoiceData) {
+                  return <div className="text-slate-900 whitespace-pre-wrap">{invoice.notes}</div>
+                }
+                
+                return (
+                  <div className="space-y-4 text-sm">
+                    {invoiceData.serviceDate && (
+                      <div>
+                        <div className="text-slate-600 font-medium">Für (Datum):</div>
+                        <div className="text-slate-900">{invoiceData.serviceDate}</div>
+                      </div>
+                    )}
+                    
+                    {invoiceData.invoiceRows && invoiceData.invoiceRows.length > 0 && (
+                      <div>
+                        <div className="text-slate-600 font-medium mb-2">Leistungen:</div>
+                        <div className="border border-slate-200 rounded-lg overflow-hidden">
+                          <table className="w-full text-sm">
+                            <thead className="bg-slate-50">
+                              <tr>
+                                <th className="px-3 py-2 text-left text-slate-700 font-medium">Beschreibung</th>
+                                <th className="px-3 py-2 text-center text-slate-700 font-medium">Stunden</th>
+                                <th className="px-3 py-2 text-center text-slate-700 font-medium">Preis</th>
+                                <th className="px-3 py-2 text-right text-slate-700 font-medium">Betrag</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {invoiceData.invoiceRows.map((row, index) => (
+                                <tr key={index} className="border-t border-slate-200">
+                                  <td className="px-3 py-2 text-slate-900 whitespace-pre-wrap">{row.description}</td>
+                                  <td className="px-3 py-2 text-center text-slate-900">{row.hours}</td>
+                                  <td className="px-3 py-2 text-center text-slate-900">{row.price}</td>
+                                  <td className="px-3 py-2 text-right text-slate-900 font-mono">{formatCurrency(row.amount || 0)}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {invoiceData.paymentTerms && (
+                      <div>
+                        <div className="text-slate-600 font-medium">Zahlungsbedingungen:</div>
+                        <div className="text-slate-900">{invoiceData.paymentTerms}</div>
+                      </div>
+                    )}
+                    
+                    {invoiceData.bankRecipientText && (
+                      <div>
+                        <div className="text-slate-600 font-medium">Bankverbindung:</div>
+                        <div className="text-slate-900">{invoiceData.bankRecipientText}</div>
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
             </div>
           )}
         </div>
