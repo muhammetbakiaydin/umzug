@@ -81,9 +81,12 @@ const ReceiptPrint = () => {
     <div className="print-page">
       <style>{`
         @media print {
-          body { margin: 0; padding: 0; }
-          .print-page { margin: 0; padding: 20mm; }
+          body { margin: 0; padding: 0; background: white; }
+          .print-page { margin: 0; padding: 20mm; background: white; }
           @page { size: A4; margin: 0; }
+        }
+        * {
+          color: #000 !important;
         }
         .print-page {
           width: 210mm;
@@ -93,6 +96,7 @@ const ReceiptPrint = () => {
           font-family: Arial, sans-serif;
           padding: 20mm;
           box-sizing: border-box;
+          color: #000;
         }
         .header-grid {
           display: grid;
@@ -103,54 +107,63 @@ const ReceiptPrint = () => {
         .company-info {
           font-size: 11px;
           line-height: 1.6;
+          color: #000;
         }
         .company-name {
           font-weight: bold;
           font-size: 14px;
           margin-bottom: 8px;
+          color: #000;
         }
         .customer-block {
           text-align: right;
           font-size: 11px;
           line-height: 1.6;
+          color: #000;
         }
         .customer-label {
           font-weight: normal;
-          color: #666;
+          color: #000;
           margin-bottom: 5px;
         }
         .reference-line {
           font-size: 11px;
           margin-bottom: 5px;
+          color: #000;
         }
         .date-line {
           font-size: 11px;
           margin-bottom: 30px;
           text-align: right;
+          color: #000;
         }
         .receipt-title {
           font-size: 20px;
           font-weight: bold;
           margin-bottom: 30px;
-          color: #e67739;
+          color: #000;
         }
         .service-table {
           width: 100%;
           border-collapse: collapse;
           margin-bottom: 40px;
           font-size: 11px;
+          color: #000;
         }
         .service-table th {
-          background-color: #f0f0f0;
-          border: 1px solid #333;
+          background-color: #fff;
+          border: 1px solid #000;
           padding: 10px 8px;
           text-align: left;
           font-weight: bold;
+          color: #000;
         }
         .service-table td {
-          border: 1px solid #333;
+          border: 1px solid #000;
           padding: 8px;
           vertical-align: top;
+          background-color: #fff;
+          color: #000;
         }
         .service-table .col-anzahl { width: 15%; }
         .service-table .col-einheit { width: 40%; }
@@ -158,7 +171,7 @@ const ReceiptPrint = () => {
         .service-table .col-total { width: 25%; text-align: right; }
         .service-table .total-row {
           font-weight: bold;
-          background-color: #f9f9f9;
+          background-color: #fff;
         }
         .bemerkung-section {
           margin-bottom: 40px;
@@ -167,12 +180,14 @@ const ReceiptPrint = () => {
           font-weight: bold;
           font-size: 12px;
           margin-bottom: 10px;
+          color: #000;
         }
         .bemerkung-text {
           font-size: 11px;
           line-height: 1.6;
           min-height: 60px;
           white-space: pre-wrap;
+          color: #000;
         }
         .signature-section {
           margin-top: 60px;
@@ -182,42 +197,48 @@ const ReceiptPrint = () => {
         }
         .signature-block {
           font-size: 11px;
+          color: #000;
         }
         .signature-line {
-          border-top: 1px solid #333;
+          border-top: 1px solid #000;
           margin-top: 50px;
           padding-top: 8px;
           font-style: italic;
+          color: #000;
         }
         .signature-name {
           margin-top: 5px;
+          color: #000;
         }
         .footer {
           margin-top: 60px;
           font-size: 10px;
-          color: #666;
+          color: #000;
           line-height: 1.6;
-          border-top: 1px solid #ddd;
+          border-top: 1px solid #000;
           padding-top: 20px;
           text-align: center;
         }
         .vat-exempt-note {
           font-size: 10px;
           font-style: italic;
-          color: #666;
+          color: #000;
+        }
+        .qr-code-section {
+          position: absolute;
+          bottom: 20mm;
+          right: 20mm;
         }
       `}</style>
 
       {/* Header: Company Info (left) + Customer Block (right) */}
       <div className="header-grid">
         <div className="company-info">
-          {company?.logo_url && (
-            <img 
-              src={company.logo_url} 
-              alt={company.company_name} 
-              style={{ maxWidth: '180px', marginBottom: '15px' }}
-            />
-          )}
+          <img 
+            src="/cropped-umzug-final.png" 
+            alt="Company Logo" 
+            style={{ maxWidth: '180px', marginBottom: '15px' }}
+          />
           <div className="company-name">{company?.company_name || 'Firma'}</div>
           <div>{company?.address_street}</div>
           <div>{company?.address_zip} {company?.address_city}</div>
@@ -341,6 +362,15 @@ const ReceiptPrint = () => {
             UID: {company.uid} | Handelsregister: {company.commercial_register || '—'}
           </div>
         )}
+      </div>
+
+      {/* QR Code */}
+      <div className="qr-code-section">
+        <img 
+          src="/QR.png" 
+          alt="QR Code" 
+          style={{ width: '80px', height: '80px' }}
+        />
       </div>
     </div>
   )
