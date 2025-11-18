@@ -80,6 +80,28 @@ const AdminDashboard = () => {
     }).format(value)
   }
 
+  const getOfferDetailRoute = (offer) => {
+    // Route based on document type
+    if (offer.document_type === 'receipt') {
+      return `/admin/receipts/${offer.id}`
+    } else if (offer.document_type === 'invoice') {
+      return `/admin/invoices/${offer.id}`
+    } else {
+      return `/admin/offers/${offer.id}`
+    }
+  }
+
+  const getOfferDisplayNumber = (offer) => {
+    // Display appropriate number based on document type
+    if (offer.document_type === 'receipt') {
+      return offer.receipt_number || offer.offer_number
+    } else if (offer.document_type === 'invoice') {
+      return offer.invoice_number || offer.offer_number
+    } else {
+      return offer.offer_number
+    }
+  }
+
   const handleLogout = async () => {
     await signOut()
     navigate('/admin/login')
@@ -179,11 +201,11 @@ const AdminDashboard = () => {
               {stats.recentOffers.map((offer) => (
                 <div
                   key={offer.id}
-                  onClick={() => navigate(`/admin/offers/${offer.id}`)}
+                  onClick={() => navigate(getOfferDetailRoute(offer))}
                   className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 cursor-pointer transition-colors"
                 >
                   <div className="flex-1">
-                    <div className="font-medium text-slate-900">{offer.offer_number}</div>
+                    <div className="font-medium text-slate-900">{getOfferDisplayNumber(offer)}</div>
                     <div className="text-sm text-slate-600">
                       {offer.from_first_name} {offer.from_last_name}
                     </div>
