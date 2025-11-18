@@ -771,6 +771,16 @@ const OfferPrint = () => {
         </span>
       </div>
 
+      {/* Notes Section */}
+      {offer.notes && (
+        <div className="notes-section no-break" style={{ marginTop: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '4px', backgroundColor: '#f9f9f9' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '8px', fontSize: '14px' }}>Bemerkungen:</div>
+          <div style={{ whiteSpace: 'pre-wrap', fontSize: '12px', lineHeight: '1.6' }}>
+            {offer.notes}
+          </div>
+        </div>
+      )}
+
       {/* Page 1 Footer */}
       <div className="page-footer">
         <p className="footer-company">Umzug UNIT GmbH</p>

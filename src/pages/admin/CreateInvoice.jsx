@@ -45,6 +45,7 @@ const CreateInvoice = () => {
     vatRate: 8.1,
     paymentTerms: 'Zahlbar innert 5 Tagen',
     bankRecipientText: 'Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN: CH39 0020 4204 2144 9601 C',
+    notes: '',
   })
 
   useEffect(() => {
@@ -177,6 +178,7 @@ const CreateInvoice = () => {
           vatRate: formData.vatRate,
           paymentTerms: formData.paymentTerms,
           bankRecipientText: formData.bankRecipientText,
+          notes: formData.notes,
         }),
         flat_rate_price: subtotal,
         subtotal: subtotal,
@@ -476,6 +478,16 @@ const CreateInvoice = () => {
                   value={formData.bankRecipientText}
                   onChange={(e) => handleChange('bankRecipientText', e.target.value)}
                   placeholder="Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN..."
+                />
+              </div>
+
+              <div>
+                <Label className="text-slate-700">Bemerkungen (optional)</Label>
+                <textarea
+                  className="w-full min-h-[100px] rounded-md border border-slate-200 bg-white text-slate-900 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary"
+                  value={formData.notes}
+                  onChange={(e) => handleChange('notes', e.target.value)}
+                  placeholder="Zusätzliche Bemerkungen zur Rechnung..."
                 />
               </div>
             </div>

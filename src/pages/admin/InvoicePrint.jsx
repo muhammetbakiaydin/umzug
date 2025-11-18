@@ -268,6 +268,16 @@ const InvoicePrint = () => {
         </div>
       )}
 
+      {/* Notes Section */}
+      {invoiceData.notes && (
+        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', fontSize: '11px' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Bemerkungen:</div>
+          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+            {invoiceData.notes}
+          </div>
+        </div>
+      )}
+
       {/* Footer Payment Info */}
       <div className="footer-payment">
         {invoiceData.bankRecipientText || 'Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN: CH39 0020 4204 2144 9601 C'}

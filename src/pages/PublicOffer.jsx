@@ -335,7 +335,7 @@ const PublicOffer = () => {
               <div className="space-y-4">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-900 mb-2">
                       Ort
                     </label>
                     <input
@@ -344,10 +344,11 @@ const PublicOffer = () => {
                       onChange={(e) => setLocation(e.target.value)}
                       placeholder="z.B. Lyss"
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white text-slate-900"
+                      style={{ color: '#000000' }}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                    <label className="block text-sm font-medium text-slate-900 mb-2">
                       Datum
                     </label>
                     <input
@@ -355,6 +356,7 @@ const PublicOffer = () => {
                       value={date}
                       onChange={(e) => setDate(e.target.value)}
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary bg-white text-slate-900"
+                      style={{ color: '#000000' }}
                     />
                   </div>
                 </div>
