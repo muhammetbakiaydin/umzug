@@ -65,8 +65,8 @@ const ReceiptDetail = () => {
   }
 
   const formatCurrency = (value) => {
-    if (!value && value !== 0) return 'CHF 0.–'
-    return `CHF ${parseFloat(value).toFixed(0)}.–`
+    if (!value && value !== 0) return 'CHF 0.00'
+    return `CHF ${parseFloat(value).toFixed(2)}`
   }
 
   const formatDate = (dateString) => {
