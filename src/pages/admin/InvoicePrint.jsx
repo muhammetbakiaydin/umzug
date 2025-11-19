@@ -186,6 +186,33 @@ const InvoicePrint = () => {
           padding-top: 20px;
           margin-top: 60px;
         }
+        .payment-qr-section {
+          border-top: 1px solid #000;
+          padding-top: 10px;
+          margin-top: 20px;
+        }
+        .payment-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 12px;
+        }
+        .payment-info {
+          font-size: 8px;
+          line-height: 1.3;
+          color: #000;
+        }
+        .payment-title {
+          font-weight: bold;
+          font-size: 9px;
+          margin-bottom: 5px;
+          color: #000;
+        }
+        .qr-code-container {
+          display: flex;
+          justify-content: flex-start;
+          align-items: flex-start;
+          margin: 5px 0;
+        }
       `}</style>
 
       {/* Header: Company Info (left) + Invoice Info (right) */}
@@ -281,6 +308,47 @@ const InvoicePrint = () => {
       {/* Footer Payment Info */}
       <div className="footer-payment">
         {invoiceData.bankRecipientText || 'Zahlungsempfänger: UBS, Umzug-Unit GmbH, IBAN: CH39 0020 4204 2144 9601 C'}
+      </div>
+
+      {/* Payment QR Code Section */}
+      <div className="payment-qr-section">
+        <div className="payment-grid">
+          <div className="payment-info">
+            <div className="payment-title">Empfangsschein</div>
+            <div><strong>Konto / Zahlbar an</strong></div>
+            <div>CH39 0020 4204 2144 9601 C</div>
+            <div>Umzug Unit GmbH</div>
+            <div>Tulpenweg 22</div>
+            <div>3250 Lyss</div>
+            <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ height: '20px' }}></div> <br /> <br /> <br /> <br />
+            <div><strong>Währung Betrag</strong></div>
+            <div>CHF</div>
+          </div>
+          <div className="payment-info">
+            <div className="payment-title">Zahlteil</div>
+            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+              <div className="qr-code-container">
+                <img 
+                  src="/QR.png" 
+                  alt="QR Code Payment" 
+                  style={{ width: '80px', height: '80px' }}
+                />
+              </div>
+              <div>
+                <div><strong>Konto / Zahlbar an</strong></div>
+                <div>CH39 0020 4204 2144 9601 C</div>
+                <div>Umzug Unit GmbH</div>
+                <div>Tulpenweg 22</div>
+                <div>3250 Lyss</div>
+                <div style={{ marginTop: '5px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+                <div style={{ height: '15px' }}></div><br /> <br /><br /> <br />
+                <div><strong>Währung Betrag</strong></div>
+                <div>CHF</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
