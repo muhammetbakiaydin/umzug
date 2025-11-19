@@ -98,7 +98,7 @@ const InvoicePrint = () => {
           margin: 0 auto;
           background: white !important;
           font-family: Arial, sans-serif;
-          padding: 20mm;
+          padding: 15mm;
           box-sizing: border-box;
           color: #000 !important;
           position: relative;
@@ -106,56 +106,56 @@ const InvoicePrint = () => {
         .header-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
-          margin-bottom: 30px;
+          gap: 20px;
+          margin-bottom: 15px;
         }
         .company-info {
-          font-size: 11px;
-          line-height: 1.6;
+          font-size: 10px;
+          line-height: 1.4;
           color: #000;
         }
         .company-name {
           font-weight: bold;
-          font-size: 14px;
-          margin-bottom: 8px;
+          font-size: 12px;
+          margin-bottom: 5px;
           color: #000;
         }
         .invoice-info-block {
           text-align: right;
-          font-size: 11px;
-          line-height: 1.8;
+          font-size: 10px;
+          line-height: 1.5;
           color: #000;
         }
         .invoice-title {
-          font-size: 22px;
+          font-size: 18px;
           font-weight: bold;
-          margin-bottom: 30px;
+          margin-bottom: 15px;
           color: #000;
           text-align: left;
         }
         .customer-block {
-          font-size: 11px;
-          line-height: 1.6;
-          margin-bottom: 30px;
+          font-size: 10px;
+          line-height: 1.4;
+          margin-bottom: 15px;
           color: #000;
         }
         .invoice-table {
           width: 100%;
           border-collapse: collapse;
-          margin-bottom: 40px;
-          font-size: 11px;
+          margin-bottom: 15px;
+          font-size: 10px;
         }
         .invoice-table th {
           background-color: #fff;
           border: 1px solid #000;
-          padding: 10px 8px;
+          padding: 6px 5px;
           text-align: left;
           font-weight: bold;
           color: #000;
         }
         .invoice-table td {
           border: 1px solid #000;
-          padding: 8px;
+          padding: 5px;
           vertical-align: top;
           background-color: #fff;
           color: #000;
@@ -166,52 +166,52 @@ const InvoicePrint = () => {
         .invoice-table .col-amount { width: 15%; text-align: right; }
         .summary-section {
           text-align: right;
-          margin-bottom: 40px;
+          margin-bottom: 15px;
         }
         .summary-line {
-          font-size: 14px;
+          font-size: 12px;
           font-weight: bold;
           color: #000;
-          margin-bottom: 5px;
+          margin-bottom: 3px;
         }
         .payment-terms {
-          font-size: 11px;
-          margin-bottom: 20px;
+          font-size: 10px;
+          margin-bottom: 10px;
           color: #000;
         }
         .footer-payment {
-          font-size: 10px;
+          font-size: 9px;
           color: #000;
           border-top: 1px solid #000;
-          padding-top: 20px;
-          margin-top: 60px;
+          padding-top: 8px;
+          margin-top: 10px;
         }
         .payment-qr-section {
           border-top: 1px solid #000;
-          padding-top: 10px;
-          margin-top: 20px;
+          padding-top: 8px;
+          margin-top: 10px;
         }
         .payment-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 12px;
+          gap: 8px;
         }
         .payment-info {
-          font-size: 8px;
-          line-height: 1.3;
+          font-size: 7px;
+          line-height: 1.2;
           color: #000;
         }
         .payment-title {
           font-weight: bold;
-          font-size: 9px;
-          margin-bottom: 5px;
+          font-size: 8px;
+          margin-bottom: 3px;
           color: #000;
         }
         .qr-code-container {
           display: flex;
           justify-content: flex-start;
           align-items: flex-start;
-          margin: 5px 0;
+          margin: 3px 0;
         }
       `}</style>
 
@@ -221,7 +221,7 @@ const InvoicePrint = () => {
           <img 
             src="/cropped-umzug-final.png" 
             alt="Company Logo" 
-            style={{ maxWidth: '180px', marginBottom: '15px' }}
+            style={{ maxWidth: '120px', marginBottom: '8px' }}
           />
           <div className="company-name">Umzug UNIT GmbH</div>
           <div>Tulpenweg 22</div>
@@ -297,9 +297,9 @@ const InvoicePrint = () => {
 
       {/* Notes Section */}
       {invoiceData.notes && (
-        <div style={{ marginTop: '20px', padding: '10px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', fontSize: '11px' }}>
-          <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>Bemerkungen:</div>
-          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.5' }}>
+        <div style={{ marginTop: '8px', padding: '6px', border: '1px solid #ddd', backgroundColor: '#f9f9f9', fontSize: '9px' }}>
+          <div style={{ fontWeight: 'bold', marginBottom: '3px' }}>Bemerkungen:</div>
+          <div style={{ whiteSpace: 'pre-wrap', lineHeight: '1.3' }}>
             {invoiceData.notes}
           </div>
         </div>
@@ -320,19 +320,19 @@ const InvoicePrint = () => {
             <div>Umzug Unit GmbH</div>
             <div>Tulpenweg 22</div>
             <div>3250 Lyss</div>
-            <div style={{ marginTop: '6px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-            <div style={{ height: '20px' }}></div> <br /> <br /> <br /> <br />
+            <div style={{ marginTop: '3px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+            <div style={{ height: '12px' }}></div>
             <div><strong>Währung Betrag</strong></div>
             <div>CHF</div>
           </div>
           <div className="payment-info">
             <div className="payment-title">Zahlteil</div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'flex-start' }}>
               <div className="qr-code-container">
                 <img 
                   src="/QR.png" 
                   alt="QR Code Payment" 
-                  style={{ width: '80px', height: '80px' }}
+                  style={{ width: '60px', height: '60px' }}
                 />
               </div>
               <div>
@@ -341,8 +341,8 @@ const InvoicePrint = () => {
                 <div>Umzug Unit GmbH</div>
                 <div>Tulpenweg 22</div>
                 <div>3250 Lyss</div>
-                <div style={{ marginTop: '5px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
-                <div style={{ height: '15px' }}></div><br /> <br /><br /> <br />
+                <div style={{ marginTop: '3px' }}><strong>Zahlbar durch (Name/Adresse)</strong></div>
+                <div style={{ height: '10px' }}></div>
                 <div><strong>Währung Betrag</strong></div>
                 <div>CHF</div>
               </div>
