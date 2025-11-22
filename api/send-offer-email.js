@@ -15,12 +15,12 @@ export default async function handler(req, res) {
   try {
     // Create SMTP transporter
     const transporter = nodemailer.createTransport({
-      host: 'hera.miraysoft.ch',
-      port: 465,
-      secure: true, // SSL/TLS
+      host: process.env.SMTP_HOST || 'hera.miraysoft.ch',
+      port: process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465,
+      secure: process.env.SMTP_SECURE ? process.env.SMTP_SECURE === 'true' : true,
       auth: {
-        user: 'noreply@umzug-unit.ch',
-        pass: 'v.;qZEVPB86msBy[',
+        user: process.env.SMTP_USER || 'info@umzug-unit.ch',
+        pass: process.env.SMTP_PASS || 'Nx5X1y0q)+=#f}l3',
       },
     });
 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
     // Send email with PDF link
     const info = await transporter.sendMail({
-      from: from || 'noreply@umzug-unit.ch',
+      from: from || process.env.SMTP_FROM || 'info@umzug-unit.ch',
       to: to,
       subject: subject,
       text: text + `\n\nOfferte ansehen: ${pdfUrl}`,

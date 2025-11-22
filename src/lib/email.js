@@ -6,7 +6,7 @@ export async function sendOfferEmail(offerData, recipientEmail, baseUrl) {
     
     // Create email content
     const emailContent = {
-      from: 'noreply@umzug-unit.ch',
+      from: process.env.NEXT_PUBLIC_SMTP_FROM || 'info@umzug-unit.ch',
       to: recipientEmail,
       subject: `Offerte ${offerData.offer_number} - Umzug UNIT GmbH`,
       text: `Sehr geehrte/r ${offerData.from_salutation} ${offerData.from_last_name},\n\nVielen Dank für Ihre Anfrage. Ihre Offerte ${offerData.offer_number} steht bereit.\n\nBitte öffnen Sie den folgenden Link, um Ihre Offerte anzusehen und zu akzeptieren oder abzulehnen:\n${publicOfferUrl}\n\nFreundliche Grüsse\nUmzug UNIT GmbH`,
